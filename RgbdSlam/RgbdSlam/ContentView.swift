@@ -12,6 +12,8 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var items: [Item]
 
+    private var rtabmap: RTABMap?
+    
     var body: some View {
         NavigationSplitView {
             List {
