@@ -15,14 +15,14 @@ struct RgbdSlamApp: App {
             Item.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
+        
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
-
+    
     var body: some Scene {
         
         WindowGroup {
@@ -30,4 +30,48 @@ struct RgbdSlamApp: App {
         }
         .modelContainer(sharedModelContainer)
     }
+}
+
+//func setUserDefaultsFromPlist() {
+//    let mappingDefaults = ["Mapping", "Assembling"]
+//    for plistName in mappingDefaults {
+//        guard let path = Bundle.main.path(forResource: plistName, ofType: "plist"),
+//              let xml = FileManager.default.contents(atPath: path),
+//              let plistDict = try? PropertyListSerialization.propertyList(from: xml, options: .mutableContainersAndLeaves, format: nil) as? [String: Any]
+//        else {
+//            NSLog("registerDefaultsFromSettingsBundle: Could not setup default plist")
+//            return
+//        }
+//    }
+//}
+
+
+func setUserDefaultsFromPlist() {
+    let mappingDefaults = ["Root", "Mapping", "Assembling"]
+
+    for plistName in mappingDefaults {
+        NSLog("plist name is \(plistName)");
+        if let settingsURL = Bundle.main.url(forResource: plistName, withExtension: "plist"),
+            let settingsPlist = NSDictionary(contentsOf: settingsURL),
+            let preferences = settingsPlist["PreferenceSpecifiers"] as? [NSDictionary] {
+
+
+
+            for prefSpecification in preferences {
+
+                if let key = prefSpecification["Key"] as? String, let value = prefSpecification["DefaultValue"] {
+
+                    //If key doesn't exists in userDefaults then register it, else keep original value
+                    if UserDefaults.standard.value(forKey: key) == nil {
+
+                        UserDefaults.standard.set(value, forKey: key)
+                        NSLog("registerDefaultsFromSettingsBundle: Set following to UserDefaults - (key: \(key), value: \(value), type: \(type(of: value)))")
+                    }
+                }
+            }
+        } else {
+            NSLog("registerDefaultsFromSettingsBundle: Could not find Settings.bundle")
+        }
+    }
+
 }

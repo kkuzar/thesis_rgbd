@@ -152,6 +152,11 @@
 		DEEEA8E52BCA10C90001E09D /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEEA8E42BCA10C90001E09D /* SettingsView.swift */; };
 		DEEEA8E72BCA84670001E09D /* CaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEEA8E62BCA84670001E09D /* CaptureView.swift */; };
 		DEEEA8ED2BCA88CF0001E09D /* install_deps.sh in Resources */ = {isa = PBXBuildFile; fileRef = DEEEA8EC2BCA88CF0001E09D /* install_deps.sh */; };
+		DEFC70112BCB163D00CDB669 /* Mapping.plist in Resources */ = {isa = PBXBuildFile; fileRef = DEC818B02BCAFF9000568052 /* Mapping.plist */; };
+		DEFC70122BCB163D00CDB669 /* Root.plist in Resources */ = {isa = PBXBuildFile; fileRef = DEC818AF2BCAFF8F00568052 /* Root.plist */; };
+		DEFC70132BCB163D00CDB669 /* Assembling.plist in Resources */ = {isa = PBXBuildFile; fileRef = DEC818AE2BCAFF8F00568052 /* Assembling.plist */; };
+		DEFC70152BCB2C9100CDB669 /* SettingMappingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC70142BCB2C9100CDB669 /* SettingMappingView.swift */; };
+		DEFC70172BCB2CAB00CDB669 /* SettingAssembleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC70162BCB2CAB00CDB669 /* SettingAssembleView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -331,9 +336,14 @@
 		DE0C8E9E2BC9F38F0085B038 /* RgbdSlam-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RgbdSlam-Bridging-Header.h"; sourceTree = "<group>"; };
 		DEC818A82BCA941500568052 /* UserSettingsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettingsModel.swift; sourceTree = "<group>"; };
 		DEC818AC2BCAAB9800568052 /* SplashScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreenView.swift; sourceTree = "<group>"; };
+		DEC818AE2BCAFF8F00568052 /* Assembling.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Assembling.plist; sourceTree = "<group>"; };
+		DEC818AF2BCAFF8F00568052 /* Root.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Root.plist; sourceTree = "<group>"; };
+		DEC818B02BCAFF9000568052 /* Mapping.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Mapping.plist; sourceTree = "<group>"; };
 		DEEEA8E42BCA10C90001E09D /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		DEEEA8E62BCA84670001E09D /* CaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureView.swift; sourceTree = "<group>"; };
 		DEEEA8EC2BCA88CF0001E09D /* install_deps.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = install_deps.sh; path = ../install_deps.sh; sourceTree = "<group>"; };
+		DEFC70142BCB2C9100CDB669 /* SettingMappingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingMappingView.swift; sourceTree = "<group>"; };
+		DEFC70162BCB2CAB00CDB669 /* SettingAssembleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingAssembleView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -488,11 +498,16 @@
 			isa = PBXGroup;
 			children = (
 				DE0C8E9E2BC9F38F0085B038 /* RgbdSlam-Bridging-Header.h */,
+				DEC818AE2BCAFF8F00568052 /* Assembling.plist */,
+				DEC818B02BCAFF9000568052 /* Mapping.plist */,
+				DEC818AF2BCAFF8F00568052 /* Root.plist */,
 				DEEEA8E62BCA84670001E09D /* CaptureView.swift */,
 				DE0C8D402BC9D0200085B038 /* ContentView.swift */,
 				DE0C8D422BC9D0200085B038 /* Item.swift */,
 				DE0C8D3E2BC9D0200085B038 /* RgbdSlamApp.swift */,
 				DE0C8DC92BC9E2DF0085B038 /* RTABMap.swift */,
+				DEFC70142BCB2C9100CDB669 /* SettingMappingView.swift */,
+				DEFC70162BCB2CAB00CDB669 /* SettingAssembleView.swift */,
 				DEEEA8E42BCA10C90001E09D /* SettingsView.swift */,
 				DEC818AC2BCAAB9800568052 /* SplashScreenView.swift */,
 				DEC818A82BCA941500568052 /* UserSettingsModel.swift */,
@@ -815,9 +830,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				DE0C8D482BC9D0220085B038 /* Preview Assets.xcassets in Resources */,
+				DEFC70132BCB163D00CDB669 /* Assembling.plist in Resources */,
 				DE0C8D452BC9D0220085B038 /* Assets.xcassets in Resources */,
 				DEEEA8ED2BCA88CF0001E09D /* install_deps.sh in Resources */,
 				DE0C8DBF2BC9E2980085B038 /* include in Resources */,
+				DEFC70122BCB163D00CDB669 /* Root.plist in Resources */,
+				DEFC70112BCB163D00CDB669 /* Mapping.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -847,6 +865,7 @@
 				DE0C8DB22BC9E2980085B038 /* band.cpp in Sources */,
 				DE0C8D962BC9E2840085B038 /* CameraMobile.cpp in Sources */,
 				DE0C8DC32BC9E2980085B038 /* cube.cpp in Sources */,
+				DEFC70152BCB2C9100CDB669 /* SettingMappingView.swift in Sources */,
 				DEC818A92BCA941500568052 /* UserSettingsModel.swift in Sources */,
 				DE0C8DC72BC9E2980085B038 /* conversions.cpp in Sources */,
 				DE0C8D8C2BC9E2840085B038 /* scene.cpp in Sources */,
@@ -866,6 +885,7 @@
 				DE0C8D412BC9D0200085B038 /* ContentView.swift in Sources */,
 				DE0C8D432BC9D0200085B038 /* Item.swift in Sources */,
 				DE0C8D922BC9E2840085B038 /* background_renderer.cc in Sources */,
+				DEFC70172BCB2CAB00CDB669 /* SettingAssembleView.swift in Sources */,
 				DE0C8DC42BC9E2980085B038 /* quad.cpp in Sources */,
 				DE0C8DB02BC9E2980085B038 /* axis.cpp in Sources */,
 				DE0C8DC52BC9E2980085B038 /* transform.cpp in Sources */,

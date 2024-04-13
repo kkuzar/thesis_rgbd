@@ -9,15 +9,37 @@ import SwiftUI
 
 struct SettingsView: View {
     
+    
+    
     @ObservedObject var settingForm = UserSettingsModel.shared
     
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/).navigationTitle("Settings")
     
-        VStack(alignment: .center) {
-            Toggle(isOn: self.$settingForm.Blending) {
-                Text("Bleeding")
+    var body: some View {
+        
+        NavigationView {
+            Form {
+                LabeledContent("iOS Version", value: "2.2.1")
+                
+                Section("Rendering") {
+                    Toggle(isOn: self.$settingForm.Blending) {
+                        Text("Bleeding")
+                    }
+                }
+                
+                Section("General") {
+                    Toggle(isOn: self.$settingForm.Blending) {
+                        Text("Bleeding")
+                    }
+                    
+                }
+                
+                Section("Optimaize") {
+                    Toggle(isOn: self.$settingForm.Blending) {
+                        Text("Bleeding")
+                    }
+                }
             }
+            .navigationTitle("Settings")
         }
     }
 }

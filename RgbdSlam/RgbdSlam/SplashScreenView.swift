@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+
 struct SplashScreenView: View {
     @State private var isLoaded = false
     @State private var size = 0.95
@@ -37,6 +38,8 @@ struct SplashScreenView: View {
                     withAnimation(.easeIn(duration: 1.2)){
                         self.size = 0.75
                         self.opacity = 1.0
+                    } completion: {
+                        
                     }
                 }
                 
@@ -47,7 +50,7 @@ struct SplashScreenView: View {
                     withAnimation(.easeOut(duration: 1.2)){
                         self.opacity = 0.1
                     } completion: {
-                        self.isLoaded = true
+                        performTasks()
                     }
                 }
             }
@@ -62,6 +65,26 @@ struct SplashScreenView: View {
         }
         
         
+    }
+    
+    private func performTasks() {
+        let taskQueue = DispatchQueue(label: "rgbd.slam.splash.queue")
+        
+        taskQueue.sync {
+            self.loadingSplash()
+        }
+    }
+    
+    private func loadingSplash() {
+        setUserDefaultsFromPlist()
+
+        DispatchQueue.main.async {
+            withAnimation(.easeOut(duration: 1.2)){
+                self.opacity = 0.1
+                self.isLoaded = true
+            }
+
+        }
     }
 }
 
