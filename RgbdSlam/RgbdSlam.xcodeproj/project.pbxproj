@@ -47,7 +47,6 @@
 		DE0C8DC82BC9E2980085B038 /* goal_marker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DE0C8DAF2BC9E2980085B038 /* goal_marker.cpp */; };
 		DE0C8DCA2BC9E2DF0085B038 /* RTABMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0C8DC92BC9E2DF0085B038 /* RTABMap.swift */; };
 		DE0C8E332BC9E3CA0085B038 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE0C8E322BC9E3CA0085B038 /* OpenGLES.framework */; };
-		DE0C8E352BC9E4070085B038 /* vtk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE0C8E342BC9E4070085B038 /* vtk.framework */; };
 		DE0C8E382BC9E5C70085B038 /* libzlib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DE0C8E312BC9E3940085B038 /* libzlib.a */; };
 		DE0C8E392BC9E5C70085B038 /* liblibjpeg-turbo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DE0C8E302BC9E3940085B038 /* liblibjpeg-turbo.a */; };
 		DE0C8E3A2BC9E5C70085B038 /* liblibpng.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DE0C8E2D2BC9E3930085B038 /* liblibpng.a */; };
@@ -147,6 +146,12 @@
 		DE0C8E9B2BC9E5C70085B038 /* librtabmap_core.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DE0C8DCF2BC9E3770085B038 /* librtabmap_core.a */; };
 		DE0C8E9C2BC9E5C70085B038 /* librtabmap_utilite.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DE0C8DDF2BC9E3770085B038 /* librtabmap_utilite.a */; };
 		DE0C8E9D2BC9F02F0085B038 /* NativeWrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DE0C8D712BC9E2420085B038 /* NativeWrapper.cpp */; };
+		DEC818A92BCA941500568052 /* UserSettingsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEC818A82BCA941500568052 /* UserSettingsModel.swift */; };
+		DEC818AD2BCAAB9800568052 /* SplashScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEC818AC2BCAAB9800568052 /* SplashScreenView.swift */; };
+		DEEEA8E12BCA0C240001E09D /* vtk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE0C8E342BC9E4070085B038 /* vtk.framework */; };
+		DEEEA8E52BCA10C90001E09D /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEEA8E42BCA10C90001E09D /* SettingsView.swift */; };
+		DEEEA8E72BCA84670001E09D /* CaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEEA8E62BCA84670001E09D /* CaptureView.swift */; };
+		DEEEA8ED2BCA88CF0001E09D /* install_deps.sh in Resources */ = {isa = PBXBuildFile; fileRef = DEEEA8EC2BCA88CF0001E09D /* install_deps.sh */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -324,6 +329,11 @@
 		DE0C8E322BC9E3CA0085B038 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		DE0C8E342BC9E4070085B038 /* vtk.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = vtk.framework; path = ../lib/vtk.framework; sourceTree = "<group>"; };
 		DE0C8E9E2BC9F38F0085B038 /* RgbdSlam-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RgbdSlam-Bridging-Header.h"; sourceTree = "<group>"; };
+		DEC818A82BCA941500568052 /* UserSettingsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettingsModel.swift; sourceTree = "<group>"; };
+		DEC818AC2BCAAB9800568052 /* SplashScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreenView.swift; sourceTree = "<group>"; };
+		DEEEA8E42BCA10C90001E09D /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		DEEEA8E62BCA84670001E09D /* CaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureView.swift; sourceTree = "<group>"; };
+		DEEEA8EC2BCA88CF0001E09D /* install_deps.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = install_deps.sh; path = ../install_deps.sh; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -331,7 +341,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DE0C8E352BC9E4070085B038 /* vtk.framework in Frameworks */,
 				DE0C8E332BC9E3CA0085B038 /* OpenGLES.framework in Frameworks */,
 				DE0C8E382BC9E5C70085B038 /* libzlib.a in Frameworks */,
 				DE0C8E392BC9E5C70085B038 /* liblibjpeg-turbo.a in Frameworks */,
@@ -414,6 +423,7 @@
 				DE0C8E892BC9E5C70085B038 /* libopencv_ximgproc.a in Frameworks */,
 				DE0C8E8A2BC9E5C70085B038 /* libopencv_xphoto.a in Frameworks */,
 				DE0C8E8B2BC9E5C70085B038 /* libpcl_common.a in Frameworks */,
+				DEEEA8E12BCA0C240001E09D /* vtk.framework in Frameworks */,
 				DE0C8E8C2BC9E5C70085B038 /* libpcl_features.a in Frameworks */,
 				DE0C8E8D2BC9E5C70085B038 /* libpcl_filters.a in Frameworks */,
 				DE0C8E8E2BC9E5C70085B038 /* libpcl_io_ply.a in Frameworks */,
@@ -454,6 +464,7 @@
 		DE0C8D322BC9D01F0085B038 = {
 			isa = PBXGroup;
 			children = (
+				DEEEA8EB2BCA88BC0001E09D /* Scripts */,
 				DE0C8D6C2BC9E1BB0085B038 /* Dependencies */,
 				DE0C8D3D2BC9D0200085B038 /* RgbdSlam */,
 				DE0C8D502BC9D0220085B038 /* RgbdSlamTests */,
@@ -476,12 +487,16 @@
 		DE0C8D3D2BC9D0200085B038 /* RgbdSlam */ = {
 			isa = PBXGroup;
 			children = (
-				DE0C8DC92BC9E2DF0085B038 /* RTABMap.swift */,
-				DE0C8D3E2BC9D0200085B038 /* RgbdSlamApp.swift */,
+				DE0C8E9E2BC9F38F0085B038 /* RgbdSlam-Bridging-Header.h */,
+				DEEEA8E62BCA84670001E09D /* CaptureView.swift */,
 				DE0C8D402BC9D0200085B038 /* ContentView.swift */,
 				DE0C8D422BC9D0200085B038 /* Item.swift */,
+				DE0C8D3E2BC9D0200085B038 /* RgbdSlamApp.swift */,
+				DE0C8DC92BC9E2DF0085B038 /* RTABMap.swift */,
+				DEEEA8E42BCA10C90001E09D /* SettingsView.swift */,
+				DEC818AC2BCAAB9800568052 /* SplashScreenView.swift */,
+				DEC818A82BCA941500568052 /* UserSettingsModel.swift */,
 				DE0C8D442BC9D0220085B038 /* Assets.xcassets */,
-				DE0C8E9E2BC9F38F0085B038 /* RgbdSlam-Bridging-Header.h */,
 				DE0C8D462BC9D0220085B038 /* Preview Content */,
 			);
 			path = RgbdSlam;
@@ -686,6 +701,14 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		DEEEA8EB2BCA88BC0001E09D /* Scripts */ = {
+			isa = PBXGroup;
+			children = (
+				DEEEA8EC2BCA88CF0001E09D /* install_deps.sh */,
+			);
+			name = Scripts;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -793,6 +816,7 @@
 			files = (
 				DE0C8D482BC9D0220085B038 /* Preview Assets.xcassets in Resources */,
 				DE0C8D452BC9D0220085B038 /* Assets.xcassets in Resources */,
+				DEEEA8ED2BCA88CF0001E09D /* install_deps.sh in Resources */,
 				DE0C8DBF2BC9E2980085B038 /* include in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -818,16 +842,20 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DEEEA8E52BCA10C90001E09D /* SettingsView.swift in Sources */,
 				DE0C8E9D2BC9F02F0085B038 /* NativeWrapper.cpp in Sources */,
 				DE0C8DB22BC9E2980085B038 /* band.cpp in Sources */,
 				DE0C8D962BC9E2840085B038 /* CameraMobile.cpp in Sources */,
 				DE0C8DC32BC9E2980085B038 /* cube.cpp in Sources */,
+				DEC818A92BCA941500568052 /* UserSettingsModel.swift in Sources */,
 				DE0C8DC72BC9E2980085B038 /* conversions.cpp in Sources */,
 				DE0C8D8C2BC9E2840085B038 /* scene.cpp in Sources */,
 				DE0C8DBB2BC9E2980085B038 /* trace.cpp in Sources */,
 				DE0C8D8D2BC9E2840085B038 /* RTABMapApp.cpp in Sources */,
 				DE0C8DBC2BC9E2980085B038 /* bounding_box.cpp in Sources */,
+				DEC818AD2BCAAB9800568052 /* SplashScreenView.swift in Sources */,
 				DE0C8DBD2BC9E2980085B038 /* shaders.cpp in Sources */,
+				DEEEA8E72BCA84670001E09D /* CaptureView.swift in Sources */,
 				DE0C8DB62BC9E2980085B038 /* gesture_camera.cpp in Sources */,
 				DE0C8DC02BC9E2980085B038 /* texture.cpp in Sources */,
 				DE0C8DC12BC9E2980085B038 /* grid.cpp in Sources */,
@@ -1061,7 +1089,7 @@
 		DE0C8D622BC9D0220085B038 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -1069,10 +1097,9 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"RgbdSlam/Preview Content\"";
-				DEVELOPMENT_TEAM = 349D6GSNKH;
+				DEVELOPMENT_TEAM = B6NTZ99L69;
 				ENABLE_PREVIEWS = YES;
 				EXCLUDED_ARCHS = "";
-				"EXCLUDED_ARCHS[sdk=*]" = "";
 				FRAMEWORK_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../Libraries/lib\"",
 					"$(inherited)",
@@ -1084,6 +1111,7 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = SlashScreenView;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1091,6 +1119,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1;
+				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kuar.thesis.rgbd.slam.RgbdSlam;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -1104,7 +1133,7 @@
 		DE0C8D632BC9D0220085B038 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -1112,8 +1141,9 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"RgbdSlam/Preview Content\"";
-				DEVELOPMENT_TEAM = 349D6GSNKH;
+				DEVELOPMENT_TEAM = B6NTZ99L69;
 				ENABLE_PREVIEWS = YES;
+				EXCLUDED_ARCHS = "";
 				FRAMEWORK_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../Libraries/lib\"",
 					"$(inherited)",
@@ -1125,6 +1155,7 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = SlashScreenView;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1132,6 +1163,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1;
+				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kuar.thesis.rgbd.slam.RgbdSlam;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

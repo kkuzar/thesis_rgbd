@@ -11,24 +11,49 @@ import SwiftData
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var items: [Item]
-
-    private var rtabmap: RTABMap?
+    
+    // private var rtabmap: RTABMap?
     
     var body: some View {
         NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
+            
+            VStack{
+                Spacer()
+                Button(action: {
+                    
+                }) {
+                    Label("Start new scan", systemImage: "plus.circle.fill")
+                        .padding()
+                        .foregroundColor(.white)
+                        .background(Color.green)
+                        .cornerRadius(10)
                 }
-                .onDelete(perform: deleteItems)
+                Spacer()
+                List {
+                    Section {
+                        if items.isEmpty {
+                            Text("There is no preview scan files")
+                        }
+                        ForEach(items) { item in
+                            NavigationLink {
+                                Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
+                            } label: {
+                                Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
+                            }
+                        }
+                        .onDelete(perform: deleteItems)
+                    } header: {
+                        Text("Scan Library")
+                    }
+                }.padding()
             }
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
+                ToolbarItem(placement: .navigationBarTrailing){
+                    NavigationLink{
+                        SettingsView()
+                    } label: {
+                        Label("Settings", systemImage: "gear")
+                    }
                 }
                 ToolbarItem {
                     Button(action: addItem) {
@@ -40,14 +65,18 @@ struct ContentView: View {
             Text("Select an item")
         }
     }
-
+    
+    private func newScan() {
+        
+    }
+    
     private func addItem() {
         withAnimation {
             let newItem = Item(timestamp: Date())
             modelContext.insert(newItem)
         }
     }
-
+    
     private func deleteItems(offsets: IndexSet) {
         withAnimation {
             for index in offsets {
