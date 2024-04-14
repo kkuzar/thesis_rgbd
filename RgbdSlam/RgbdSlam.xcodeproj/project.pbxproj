@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DE0C565C2BCB825000D54FEC /* Zip in Frameworks */ = {isa = PBXBuildFile; productRef = DE0C565B2BCB825000D54FEC /* Zip */; };
+		DE0C56602BCC419400D54FEC /* RgbdCaptureExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0C565F2BCC419400D54FEC /* RgbdCaptureExtensions.swift */; };
 		DE0C8D3F2BC9D0200085B038 /* RgbdSlamApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0C8D3E2BC9D0200085B038 /* RgbdSlamApp.swift */; };
 		DE0C8D412BC9D0200085B038 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0C8D402BC9D0200085B038 /* ContentView.swift */; };
 		DE0C8D432BC9D0200085B038 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0C8D422BC9D0200085B038 /* Item.swift */; };
@@ -180,6 +182,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		DE0C565F2BCC419400D54FEC /* RgbdCaptureExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RgbdCaptureExtensions.swift; sourceTree = "<group>"; };
 		DE0C8D3B2BC9D0200085B038 /* RgbdSlam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RgbdSlam.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DE0C8D3E2BC9D0200085B038 /* RgbdSlamApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RgbdSlamApp.swift; sourceTree = "<group>"; };
 		DE0C8D402BC9D0200085B038 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -455,6 +458,7 @@
 				DE0C8E982BC9E5C70085B038 /* libpcl_segmentation.a in Frameworks */,
 				DE0C8E992BC9E5C70085B038 /* libpcl_stereo.a in Frameworks */,
 				DE0C8E9A2BC9E5C70085B038 /* libpcl_surface.a in Frameworks */,
+				DE0C565C2BCB825000D54FEC /* Zip in Frameworks */,
 				DE0C8E9B2BC9E5C70085B038 /* librtabmap_core.a in Frameworks */,
 				DE0C8E9C2BC9E5C70085B038 /* librtabmap_utilite.a in Frameworks */,
 			);
@@ -522,6 +526,7 @@
 				DE0C8D462BC9D0220085B038 /* Preview Content */,
 				DEFC70182BCB376800CDB669 /* SettingsUtil.swift */,
 				DEFC701A2BCB5B1A00CDB669 /* SettingOptions.swift */,
+				DE0C565F2BCC419400D54FEC /* RgbdCaptureExtensions.swift */,
 			);
 			path = RgbdSlam;
 			sourceTree = "<group>";
@@ -749,6 +754,9 @@
 			dependencies = (
 			);
 			name = RgbdSlam;
+			packageProductDependencies = (
+				DE0C565B2BCB825000D54FEC /* Zip */,
+			);
 			productName = RgbdSlam;
 			productReference = DE0C8D3B2BC9D0200085B038 /* RgbdSlam.app */;
 			productType = "com.apple.product-type.application";
@@ -822,6 +830,9 @@
 				Base,
 			);
 			mainGroup = DE0C8D322BC9D01F0085B038;
+			packageReferences = (
+				DE0C565A2BCB825000D54FEC /* XCRemoteSwiftPackageReference "Zip" */,
+			);
 			productRefGroup = DE0C8D3C2BC9D0200085B038 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -894,6 +905,7 @@
 				DE0C8D412BC9D0200085B038 /* ContentView.swift in Sources */,
 				DE0C8D432BC9D0200085B038 /* Item.swift in Sources */,
 				DE0C8D922BC9E2840085B038 /* background_renderer.cc in Sources */,
+				DE0C56602BCC419400D54FEC /* RgbdCaptureExtensions.swift in Sources */,
 				DEFC70172BCB2CAB00CDB669 /* SettingAssembleView.swift in Sources */,
 				DE0C8DC42BC9E2980085B038 /* quad.cpp in Sources */,
 				DEFC701B2BCB5B1A00CDB669 /* SettingOptions.swift in Sources */,
@@ -1325,6 +1337,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		DE0C565A2BCB825000D54FEC /* XCRemoteSwiftPackageReference "Zip" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/marmelroy/Zip";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.1.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		DE0C565B2BCB825000D54FEC /* Zip */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DE0C565A2BCB825000D54FEC /* XCRemoteSwiftPackageReference "Zip" */;
+			productName = Zip;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = DE0C8D332BC9D01F0085B038 /* Project object */;
 }

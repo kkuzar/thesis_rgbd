@@ -10,13 +10,10 @@ import GLKit
 import ARKit
 import StoreKit
 
-struct GLKViewControllerWrapper: UIViewControllerRepresentable {
-//    func makeUIViewController(context: Context) -> some GLKViewController {
-//        return MyGLKViewController()
-//    }
+struct RGBDCaptureViewControllerWrapper: UIViewControllerRepresentable {
     
     func makeUIViewController(context: Context) -> some GLKViewController {
-        return MyComplexViewController()
+        return RGBDCaptureViewController()
     }
     
     func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
@@ -24,63 +21,385 @@ struct GLKViewControllerWrapper: UIViewControllerRepresentable {
     }
 }
 
-class MyGLKViewController: GLKViewController {
-    var glkView: GLKView!
-    var effect: GLKBaseEffect!
+class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIPickerViewDataSource, UIPickerViewDelegate, CLLocationManagerDelegate {
     
+    private let session = ARSession()
+    private var locationManager: CLLocationManager?
+    private var mLastKnownLocation: CLLocation?
+    private var mLastLightEstimate: CGFloat?
+    
+    private var context: EAGLContext?
+    private var rtabmap: RTABMap?
+    private var cameraMode: Int = 1
+    
+    private var databases = [URL]()
+    private var currentDatabaseIndex: Int = 0
+    private var openedDatabasePath: URL?
+    
+    private var progressDialog: UIAlertController?
+    var progressView : UIProgressView?
+    
+    var maxPolygonsPickerView: UIPickerView!
+    var maxPolygonsPickerData: [Int]!
+    
+    private var mTotalLoopClosures: Int = 0
+    private var mMapNodes: Int = 0
+    private var mTimeThr: Int = 0
+    private var mMaxFeatures: Int = 0
+    private var mLoopThr = 0.11
+    private var depthSupported: Bool = false
+    
+    private var mReviewRequested = false
+    
+    
+    lazy var  testBtn : UIButton = {
+        let btn = UIButton(type: .roundedRect)
+        btn.setTitle("Scan", for: .normal)
+        btn.translatesAutoresizingMaskIntoConstraints = false
+        return btn
+    }()
+    
+    lazy var toastLabel: UILabel = {
+        let lbl = UILabel()
+        return lbl
+    }()
+    
+    func showToast(message : String, seconds: Double){
+        if(!self.toastLabel.isHidden)
+        {
+            return;
+        }
+        self.toastLabel.text = message
+        self.toastLabel.isHidden = false
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + seconds) {
+            self.toastLabel.isHidden = true
+        }
+    }
+    
+    // MARK: Functions
+    func setGLCamera(type: Int)
+    {
+        cameraMode = type
+        rtabmap!.setCamera(type: type);
+    }
+    
+    //This is called when a new frame has been updated.
+    func session(_ session: ARSession, didUpdate frame: ARFrame)
+    {
+        var status = ""
+        var accept = false
+        
+        switch frame.camera.trackingState {
+        case .normal:
+            accept = true
+        case .notAvailable:
+            status = "Tracking not available"
+        case .limited(.excessiveMotion):
+            accept = true
+            status = "Please Slow Your Movement"
+        case .limited(.insufficientFeatures):
+            accept = true
+            status = "Avoid Featureless Surfaces"
+        case .limited(.initializing):
+            status = "Initializing"
+        case .limited(.relocalizing):
+            status = "Relocalizing"
+        default:
+            status = "Unknown tracking state"
+        }
+        
+        mLastLightEstimate = frame.lightEstimate?.ambientIntensity
+        
+        if !status.isEmpty && mLastLightEstimate != nil && mLastLightEstimate! < 100 && accept {
+            status = "Camera Is Occluded Or Lighting Is Too Dark"
+        }
+        
+        if accept
+        {
+            if let rotation = UIApplication.shared.windows.first?.windowScene?.interfaceOrientation
+            {
+                rtabmap?.postOdometryEvent(frame: frame, orientation: rotation, viewport: self.view.frame.size)
+            }
+        }
+        else
+        {
+            rtabmap?.notifyLost();
+        }
+        
+        if !status.isEmpty {
+            DispatchQueue.main.async {
+                self.showToast(message: status, seconds: 2)
+            }
+        }
+    }
+    
+    // This is called when a session fails.
+    func session(_ session: ARSession, didFailWithError error: Error) {
+        // Present an error message to the user.
+        guard error is ARError else { return }
+        let errorWithInfo = error as NSError
+        let messages = [
+            errorWithInfo.localizedDescription,
+            errorWithInfo.localizedFailureReason,
+            errorWithInfo.localizedRecoverySuggestion
+        ]
+        let errorMessage = messages.compactMap({ $0 }).joined(separator: "\n")
+        DispatchQueue.main.async {
+            // Present an alert informing about the error that has occurred.
+            let alertController = UIAlertController(title: "The AR session failed.", message: errorMessage, preferredStyle: .alert)
+            let restartAction = UIAlertAction(title: "Restart Session", style: .default) { _ in
+                alertController.dismiss(animated: true, completion: nil)
+                if let configuration = self.session.configuration {
+                    self.session.run(configuration, options: [.resetSceneReconstruction, .resetTracking, .removeExistingAnchors])
+                }
+            }
+            alertController.addAction(restartAction)
+            self.present(alertController, animated: true, completion: nil)
+        }
+    }
+    
+//    func setMeshRendering(viewMode: Int)
+//    {
+//        switch viewMode {
+//        case 0:
+//            self.rtabmap?.setMeshRendering(enabled: false, withTexture: false)
+//        case 1:
+//            self.rtabmap?.setMeshRendering(enabled: true, withTexture: false)
+//        default:
+//            self.rtabmap?.setMeshRendering(enabled: true, withTexture: true)
+//        }
+//        self.viewMode = viewMode
+//        updateState(state: mState)
+//    }
+    
+    
+    // MARK: Override UIkit life cycle hook
+    
+    deinit {
+        EAGLContext.setCurrent(context)
+        rtabmap = nil
+        context = nil
+        EAGLContext.setCurrent(nil)
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        // The screen shouldn't dim during AR experiences.
+        UIApplication.shared.isIdleTimerDisabled = true
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        glkView = view as? GLKView
-        glkView.context = EAGLContext(api: .openGLES3)!
-        EAGLContext.setCurrent(glkView.context)
+        depthSupported = ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth)
         
-        setupGLContext()
-        setupEffect()
+        rtabmap = RTABMap()
+        rtabmap?.setupCallbacksWithCPP()
+        
+        context = EAGLContext(api: .openGLES2)
+        EAGLContext.setCurrent(context)
+        
+        if let view = self.view as? GLKView, let context = context {
+            view.context = context
+            delegate = self
+            rtabmap?.initGlContent()
+        }
+        
+        view.backgroundColor = UIColor.white
+        self.view.addSubview(testBtn)
+        testBtn.addAction(UIAction { _ in
+            NSLog("scan button pressed")
+        }, for: .touchUpInside)
+        testBtn.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        testBtn.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+        
+        
+        let doubleTap = UITapGestureRecognizer(target: self, action: #selector(doubleTapped(_:)))
+        doubleTap.numberOfTapsRequired = 2
+        view.addGestureRecognizer(doubleTap)
+        let singleTap = UITapGestureRecognizer(target: self, action: #selector(singleTapped(_:)))
+        singleTap.numberOfTapsRequired = 1
+        view.addGestureRecognizer(singleTap)
+        
+        
+        rtabmap!.addObserver(self)
+        
+        maxPolygonsPickerView = UIPickerView(frame: CGRect(x: 10, y: 50, width: 250, height: 150))
+        maxPolygonsPickerView.delegate = self
+        maxPolygonsPickerView.dataSource = self
+        
+        // This is where you can set your min/max values
+        let minNum = 0
+        let maxNum = 9
+        maxPolygonsPickerData = Array(stride(from: minNum, to: maxNum + 1, by: 1))
+        
     }
     
-    private func setupGLContext() {
-        let aspect = Float(view.bounds.size.width / view.bounds.size.height)
-        let projectionMatrix = GLKMatrix4MakePerspective(GLKMathDegreesToRadians(65.0), aspect, 0.1, 10.0)
-        
-        effect = GLKBaseEffect()
-        effect.transform.projectionMatrix = projectionMatrix
+    
+    // MARK: Guestures
+    
+    var firstTouch: UITouch?
+    var secondTouch: UITouch?
+    
+    override func touchesBegan(_ touches: Set<UITouch>,
+                 with event: UIEvent?)
+    {
+        super.touchesBegan(touches, with: event)
+        for touch in touches {
+            if (firstTouch == nil) {
+                firstTouch = touch
+                let pose = touch.location(in: self.view)
+                let normalizedX = pose.x / self.view.bounds.size.width;
+                let normalizedY = pose.y / self.view.bounds.size.height;
+                rtabmap?.onTouchEvent(touch_count: 1, event: 0, x0: Float(normalizedX), y0: Float(normalizedY), x1: 0.0, y1: 0.0);
+            }
+            else if (firstTouch != nil && secondTouch == nil)
+            {
+                secondTouch = touch
+                if let pose0 = firstTouch?.location(in: self.view)
+                {
+                    if let pose1 = secondTouch?.location(in: self.view)
+                    {
+                        let normalizedX0 = pose0.x / self.view.bounds.size.width;
+                        let normalizedY0 = pose0.y / self.view.bounds.size.height;
+                        let normalizedX1 = pose1.x / self.view.bounds.size.width;
+                        let normalizedY1 = pose1.y / self.view.bounds.size.height;
+                        rtabmap?.onTouchEvent(touch_count: 2, event: 5, x0: Float(normalizedX0), y0: Float(normalizedY0), x1: Float(normalizedX1), y1: Float(normalizedY1));
+                    }
+                }
+            }
+        }
+        if self.isPaused {
+            self.view.setNeedsDisplay()
+        }
     }
     
-    private func setupEffect() {
-        let modelViewMatrix = GLKMatrix4MakeTranslation(0.0, 0.0, -2.0)
-        effect.transform.modelviewMatrix = modelViewMatrix
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesMoved(touches, with: event)
+        var firstTouchUsed = false
+        var secondTouchUsed = false
+        for touch in touches {
+            if(touch == firstTouch)
+            {
+                firstTouchUsed = true
+            }
+            else if(touch == secondTouch)
+            {
+                secondTouchUsed = true
+            }
+        }
+        if(secondTouch != nil)
+        {
+            if(firstTouchUsed || secondTouchUsed)
+            {
+                if let pose0 = firstTouch?.location(in: self.view)
+                {
+                    if let pose1 = secondTouch?.location(in: self.view)
+                    {
+                        let normalizedX0 = pose0.x / self.view.bounds.size.width;
+                        let normalizedY0 = pose0.y / self.view.bounds.size.height;
+                        let normalizedX1 = pose1.x / self.view.bounds.size.width;
+                        let normalizedY1 = pose1.y / self.view.bounds.size.height;
+                        rtabmap?.onTouchEvent(touch_count: 2, event: 2, x0: Float(normalizedX0), y0: Float(normalizedY0), x1: Float(normalizedX1), y1: Float(normalizedY1));
+                    }
+                }
+            }
+        }
+        else if(firstTouchUsed)
+        {
+            if let pose = firstTouch?.location(in: self.view)
+            {
+                let normalizedX = pose.x / self.view.bounds.size.width;
+                let normalizedY = pose.y / self.view.bounds.size.height;
+                rtabmap?.onTouchEvent(touch_count: 1, event: 2, x0: Float(normalizedX), y0: Float(normalizedY), x1: 0.0, y1: 0.0);
+            }
+        }
+        if self.isPaused {
+            self.view.setNeedsDisplay()
+        }
     }
-    
-    override func glkView(_ view: GLKView, drawIn rect: CGRect) {
-        glClearColor(0.1, 0.1, 0.2, 1.0)
-        glClear(GLbitfield(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT))
-        
-        effect.prepareToDraw()
-        
-        var vertices: [GLfloat] = [
-            0.0,  1.0, 0.0,  // Vertex 1
-            -1.0, -1.0, 0.0,  // Vertex 2
-            1.0, -1.0, 0.0   // Vertex 3
-        ]
-        
-        glEnableVertexAttribArray(GLuint(GLKVertexAttrib.position.rawValue))
-        glVertexAttribPointer(
-            GLuint(GLKVertexAttrib.position.rawValue),
-            3,
-            GLenum(GL_FLOAT),
-            GLboolean(GL_FALSE),
-            0,
-            &vertices
-        )
-        
-        glDrawArrays(GLenum(GL_TRIANGLES), 0, 3)
-        glDisableVertexAttribArray(GLuint(GLKVertexAttrib.position.rawValue))
-    }
-}
 
-class MyComplexViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIPickerViewDataSource, UIPickerViewDelegate, CLLocationManagerDelegate {
+    
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesEnded(touches, with: event)
+        for touch in touches {
+            if(touch == firstTouch)
+            {
+                firstTouch = nil
+            }
+            else if(touch == secondTouch)
+            {
+                secondTouch = nil
+            }
+        }
+        if (firstTouch == nil && secondTouch != nil)
+        {
+            firstTouch = secondTouch
+            secondTouch = nil
+        }
+        if (firstTouch != nil && secondTouch == nil)
+        {
+            let pose = firstTouch!.location(in: self.view)
+            let normalizedX = pose.x / self.view.bounds.size.width;
+            let normalizedY = pose.y / self.view.bounds.size.height;
+            rtabmap?.onTouchEvent(touch_count: 1, event: 0, x0: Float(normalizedX), y0: Float(normalizedY), x1: 0.0, y1: 0.0);
+        }
+        if self.isPaused {
+            self.view.setNeedsDisplay()
+        }
+    }
+    
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesCancelled(touches, with: event)
+        for touch in touches {
+            if(touch == firstTouch)
+            {
+                firstTouch = nil;
+            }
+            else if(touch == secondTouch)
+            {
+                secondTouch = nil;
+            }
+        }
+        if self.isPaused {
+            self.view.setNeedsDisplay()
+        }
+    }
+    
+    @IBAction func doubleTapped(_ gestureRecognizer: UITapGestureRecognizer) {
+        if gestureRecognizer.state == UIGestureRecognizer.State.recognized
+        {
+            let pose = gestureRecognizer.location(in: gestureRecognizer.view)
+            let normalizedX = pose.x / self.view.bounds.size.width;
+            let normalizedY = pose.y / self.view.bounds.size.height;
+            rtabmap?.onTouchEvent(touch_count: 3, event: 0, x0: Float(normalizedX), y0: Float(normalizedY), x1: 0.0, y1: 0.0);
+        
+            
+            if self.isPaused {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    self.view.setNeedsDisplay()
+                }
+            }
+        }
+    }
+    
+    @IBAction func singleTapped(_ gestureRecognizer: UITapGestureRecognizer) {
+        if gestureRecognizer.state == UIGestureRecognizer.State.recognized
+        {
+            // resetNoTouchTimer(!mHudVisible)
+            
+            if self.isPaused {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    self.view.setNeedsDisplay()
+                }
+            }
+        }
+    }
+
+    
+    // MARK: RTABMap protocols
+    
     func progressUpdated(_ rtabmap: RTABMap, count: Int, max: Int) {
         //
     }
@@ -102,7 +421,41 @@ class MyComplexViewController: GLKViewController, ARSessionDelegate, RTABMapObse
         //
         return 0
     }
+}
+
+extension RGBDCaptureViewController: GLKViewControllerDelegate {
     
+    // OPENGL UPDATE
+    func glkViewControllerUpdate(_ controller: GLKViewController) {
+        
+    }
     
+    // OPENGL DRAW
+    override func glkView(_ view: GLKView, drawIn rect: CGRect) {
+        if let rotation = UIApplication.shared.windows.first?.windowScene?.interfaceOrientation
+        {
+            let viewportSize = CGSize(width: rect.size.width * view.contentScaleFactor, height: rect.size.height * view.contentScaleFactor)
+            rtabmap?.setupGraphic(size: viewportSize, orientation: rotation)
+        }
+        
+        let value = rtabmap?.render()
+        
+        DispatchQueue.main.async {
+            if(value != 0 && self.progressView != nil)
+            {
+                print("Render dismissing")
+                self.dismiss(animated: true)
+                self.progressView = nil
+            }
+            if(value == -1)
+            {
+                self.showToast(message: "Out of Memory!", seconds: 2)
+            }
+            else if(value == -2)
+            {
+                self.showToast(message: "Rendering Error!", seconds: 2)
+            }
+        }
+    }
 }
 

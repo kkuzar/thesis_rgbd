@@ -32,20 +32,6 @@ struct RgbdSlamApp: App {
     }
 }
 
-//func setUserDefaultsFromPlist() {
-//    let mappingDefaults = ["Mapping", "Assembling"]
-//    for plistName in mappingDefaults {
-//        guard let path = Bundle.main.path(forResource: plistName, ofType: "plist"),
-//              let xml = FileManager.default.contents(atPath: path),
-//              let plistDict = try? PropertyListSerialization.propertyList(from: xml, options: .mutableContainersAndLeaves, format: nil) as? [String: Any]
-//        else {
-//            NSLog("registerDefaultsFromSettingsBundle: Could not setup default plist")
-//            return
-//        }
-//    }
-//}
-
-
 func setUserDefaultsFromPlist() {
     let mappingDefaults = ["Root", "Mapping", "Assembling"]
 

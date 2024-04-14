@@ -8,10 +8,25 @@
 import SwiftUI
 
 struct RgbdCaptureView: View {
+    
+    // MARK: View body
     var body: some View {
-        GLKViewControllerWrapper()
+        VStack {
+            RGBDCaptureViewControllerWrapper()
+            Button(action: testAction) {
+                Label("Add Item", systemImage: "plus")
+            }
+        }.navigationBarBackButtonHidden(true)
     }
+  
+    // MARK: Functions
+    
+    private func testAction() {
+        NSLog("Swift UI action btn")
+    }
+
 }
+
 
 #Preview {
     RgbdCaptureView()

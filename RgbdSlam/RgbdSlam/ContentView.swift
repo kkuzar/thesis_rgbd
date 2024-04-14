@@ -64,10 +64,6 @@ struct ContentView: View {
         .navigationBarBackButtonHidden(true)
     }
     
-    private func newScan() {
-        
-    }
-    
     private func addItem() {
         withAnimation {
             let newItem = Item(timestamp: Date())
