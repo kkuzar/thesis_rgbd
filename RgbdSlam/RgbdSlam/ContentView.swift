@@ -11,7 +11,6 @@ import SwiftData
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var items: [Item]
-    
     // private var rtabmap: RTABMap?
     
     var body: some View {
@@ -19,15 +18,12 @@ struct ContentView: View {
             
             VStack{
                 Spacer()
-                Button(action: {
-                    
-                }) {
-                    Label("Start new scan", systemImage: "plus.circle.fill")
-                        .padding()
-                        .foregroundColor(.white)
-                        .background(Color.green)
-                        .cornerRadius(10)
-                }
+                NavigationLink (destination: CaptureView()) {
+                    Text(Image(systemName: "plus.circle.fill")) + Text("Start new scan")
+                }.padding()
+                    .foregroundColor(.white)
+                    .background(Color.green)
+                    .cornerRadius(10)
                 Spacer()
                 List {
                     Section {
@@ -64,6 +60,8 @@ struct ContentView: View {
         } detail: {
             Text("Select an item")
         }
+        .animation(Animation.easeIn(duration: 0.1))
+        .navigationBarBackButtonHidden(true)
     }
     
     private func newScan() {

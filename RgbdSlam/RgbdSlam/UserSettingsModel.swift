@@ -190,7 +190,7 @@ public class UserSettingsModel: ObservableObject{
         }
     }
     
-    @Published var MeshAngleTolerance : Float {
+    @Published var MeshAngleTolerance : Int {
         didSet {
             UserDefaults.standard.set(self.MeshAngleTolerance, forKey: "MeshAngleTolerance")
         }
@@ -279,7 +279,7 @@ public class UserSettingsModel: ObservableObject{
         self.MaxDepth = UserDefaults.standard.float(forKey: "MaxDepth")
         self.MinDepth = UserDefaults.standard.float(forKey: "MinDepth")
         self.PointSize = UserDefaults.standard.float(forKey: "PointSize")
-        self.MeshAngleTolerance = UserDefaults.standard.float(forKey: "MeshAngleTolerance")
+        self.MeshAngleTolerance = UserDefaults.standard.integer(forKey: "MeshAngleTolerance")
         self.MeshDecimationFactor = UserDefaults.standard.float(forKey: "MeshDecimationFactor")
         self.BackgroundColor = UserDefaults.standard.float(forKey: "BackgroundColor")
         self.NoiseFilteringRatio = UserDefaults.standard.float(forKey: "NoiseFilteringRatio")

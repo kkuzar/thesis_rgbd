@@ -35,7 +35,7 @@ struct SplashScreenView: View {
                 .scaleEffect(size)
                 .opacity(opacity)
                 .onAppear{
-                    withAnimation(.easeIn(duration: 1.2)){
+                    withAnimation(.easeIn(duration: 0.55)){
                         self.size = 0.75
                         self.opacity = 1.0
                     } completion: {
@@ -47,7 +47,7 @@ struct SplashScreenView: View {
             
             .onAppear{
                 DispatchQueue.main.asyncAfter(deadline: .now() + 3.5){
-                    withAnimation(.easeOut(duration: 1.2)){
+                    withAnimation(.easeOut(duration: 0.65)){
                         self.opacity = 0.1
                     } completion: {
                         performTasks()

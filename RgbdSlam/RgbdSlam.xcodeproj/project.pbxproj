@@ -157,6 +157,8 @@
 		DEFC70132BCB163D00CDB669 /* Assembling.plist in Resources */ = {isa = PBXBuildFile; fileRef = DEC818AE2BCAFF8F00568052 /* Assembling.plist */; };
 		DEFC70152BCB2C9100CDB669 /* SettingMappingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC70142BCB2C9100CDB669 /* SettingMappingView.swift */; };
 		DEFC70172BCB2CAB00CDB669 /* SettingAssembleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC70162BCB2CAB00CDB669 /* SettingAssembleView.swift */; };
+		DEFC70192BCB376800CDB669 /* SettingsUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC70182BCB376800CDB669 /* SettingsUtil.swift */; };
+		DEFC701B2BCB5B1A00CDB669 /* SettingOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC701A2BCB5B1A00CDB669 /* SettingOptions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -344,6 +346,8 @@
 		DEEEA8EC2BCA88CF0001E09D /* install_deps.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = install_deps.sh; path = ../install_deps.sh; sourceTree = "<group>"; };
 		DEFC70142BCB2C9100CDB669 /* SettingMappingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingMappingView.swift; sourceTree = "<group>"; };
 		DEFC70162BCB2CAB00CDB669 /* SettingAssembleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingAssembleView.swift; sourceTree = "<group>"; };
+		DEFC70182BCB376800CDB669 /* SettingsUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsUtil.swift; sourceTree = "<group>"; };
+		DEFC701A2BCB5B1A00CDB669 /* SettingOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingOptions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -513,6 +517,8 @@
 				DEC818A82BCA941500568052 /* UserSettingsModel.swift */,
 				DE0C8D442BC9D0220085B038 /* Assets.xcassets */,
 				DE0C8D462BC9D0220085B038 /* Preview Content */,
+				DEFC70182BCB376800CDB669 /* SettingsUtil.swift */,
+				DEFC701A2BCB5B1A00CDB669 /* SettingOptions.swift */,
 			);
 			path = RgbdSlam;
 			sourceTree = "<group>";
@@ -887,6 +893,8 @@
 				DE0C8D922BC9E2840085B038 /* background_renderer.cc in Sources */,
 				DEFC70172BCB2CAB00CDB669 /* SettingAssembleView.swift in Sources */,
 				DE0C8DC42BC9E2980085B038 /* quad.cpp in Sources */,
+				DEFC701B2BCB5B1A00CDB669 /* SettingOptions.swift in Sources */,
+				DEFC70192BCB376800CDB669 /* SettingsUtil.swift in Sources */,
 				DE0C8DB02BC9E2980085B038 /* axis.cpp in Sources */,
 				DE0C8DC52BC9E2980085B038 /* transform.cpp in Sources */,
 				DE0C8DB52BC9E2980085B038 /* segment_drawable.cpp in Sources */,
