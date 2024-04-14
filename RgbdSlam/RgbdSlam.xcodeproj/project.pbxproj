@@ -150,7 +150,7 @@
 		DEC818AD2BCAAB9800568052 /* SplashScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEC818AC2BCAAB9800568052 /* SplashScreenView.swift */; };
 		DEEEA8E12BCA0C240001E09D /* vtk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE0C8E342BC9E4070085B038 /* vtk.framework */; };
 		DEEEA8E52BCA10C90001E09D /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEEA8E42BCA10C90001E09D /* SettingsView.swift */; };
-		DEEEA8E72BCA84670001E09D /* CaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEEA8E62BCA84670001E09D /* CaptureView.swift */; };
+		DEEEA8E72BCA84670001E09D /* RgbdCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEEA8E62BCA84670001E09D /* RgbdCaptureView.swift */; };
 		DEEEA8ED2BCA88CF0001E09D /* install_deps.sh in Resources */ = {isa = PBXBuildFile; fileRef = DEEEA8EC2BCA88CF0001E09D /* install_deps.sh */; };
 		DEFC70112BCB163D00CDB669 /* Mapping.plist in Resources */ = {isa = PBXBuildFile; fileRef = DEC818B02BCAFF9000568052 /* Mapping.plist */; };
 		DEFC70122BCB163D00CDB669 /* Root.plist in Resources */ = {isa = PBXBuildFile; fileRef = DEC818AF2BCAFF8F00568052 /* Root.plist */; };
@@ -159,6 +159,7 @@
 		DEFC70172BCB2CAB00CDB669 /* SettingAssembleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC70162BCB2CAB00CDB669 /* SettingAssembleView.swift */; };
 		DEFC70192BCB376800CDB669 /* SettingsUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC70182BCB376800CDB669 /* SettingsUtil.swift */; };
 		DEFC701B2BCB5B1A00CDB669 /* SettingOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC701A2BCB5B1A00CDB669 /* SettingOptions.swift */; };
+		DEFC701D2BCB645900CDB669 /* RgbdCamptureGLKView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC701C2BCB645900CDB669 /* RgbdCamptureGLKView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -342,12 +343,13 @@
 		DEC818AF2BCAFF8F00568052 /* Root.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Root.plist; sourceTree = "<group>"; };
 		DEC818B02BCAFF9000568052 /* Mapping.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Mapping.plist; sourceTree = "<group>"; };
 		DEEEA8E42BCA10C90001E09D /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		DEEEA8E62BCA84670001E09D /* CaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureView.swift; sourceTree = "<group>"; };
+		DEEEA8E62BCA84670001E09D /* RgbdCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RgbdCaptureView.swift; sourceTree = "<group>"; };
 		DEEEA8EC2BCA88CF0001E09D /* install_deps.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = install_deps.sh; path = ../install_deps.sh; sourceTree = "<group>"; };
 		DEFC70142BCB2C9100CDB669 /* SettingMappingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingMappingView.swift; sourceTree = "<group>"; };
 		DEFC70162BCB2CAB00CDB669 /* SettingAssembleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingAssembleView.swift; sourceTree = "<group>"; };
 		DEFC70182BCB376800CDB669 /* SettingsUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsUtil.swift; sourceTree = "<group>"; };
 		DEFC701A2BCB5B1A00CDB669 /* SettingOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingOptions.swift; sourceTree = "<group>"; };
+		DEFC701C2BCB645900CDB669 /* RgbdCamptureGLKView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RgbdCamptureGLKView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -505,7 +507,8 @@
 				DEC818AE2BCAFF8F00568052 /* Assembling.plist */,
 				DEC818B02BCAFF9000568052 /* Mapping.plist */,
 				DEC818AF2BCAFF8F00568052 /* Root.plist */,
-				DEEEA8E62BCA84670001E09D /* CaptureView.swift */,
+				DEEEA8E62BCA84670001E09D /* RgbdCaptureView.swift */,
+				DEFC701C2BCB645900CDB669 /* RgbdCamptureGLKView.swift */,
 				DE0C8D402BC9D0200085B038 /* ContentView.swift */,
 				DE0C8D422BC9D0200085B038 /* Item.swift */,
 				DE0C8D3E2BC9D0200085B038 /* RgbdSlamApp.swift */,
@@ -880,7 +883,7 @@
 				DE0C8DBC2BC9E2980085B038 /* bounding_box.cpp in Sources */,
 				DEC818AD2BCAAB9800568052 /* SplashScreenView.swift in Sources */,
 				DE0C8DBD2BC9E2980085B038 /* shaders.cpp in Sources */,
-				DEEEA8E72BCA84670001E09D /* CaptureView.swift in Sources */,
+				DEEEA8E72BCA84670001E09D /* RgbdCaptureView.swift in Sources */,
 				DE0C8DB62BC9E2980085B038 /* gesture_camera.cpp in Sources */,
 				DE0C8DC02BC9E2980085B038 /* texture.cpp in Sources */,
 				DE0C8DC12BC9E2980085B038 /* grid.cpp in Sources */,
@@ -899,6 +902,7 @@
 				DE0C8DC52BC9E2980085B038 /* transform.cpp in Sources */,
 				DE0C8DB52BC9E2980085B038 /* segment_drawable.cpp in Sources */,
 				DE0C8DB82BC9E2980085B038 /* triangle.cpp in Sources */,
+				DEFC701D2BCB645900CDB669 /* RgbdCamptureGLKView.swift in Sources */,
 				DE0C8DB72BC9E2980085B038 /* util.cpp in Sources */,
 				DE0C8DB92BC9E2980085B038 /* line.cpp in Sources */,
 				DE0C8DB42BC9E2980085B038 /* camera.cpp in Sources */,

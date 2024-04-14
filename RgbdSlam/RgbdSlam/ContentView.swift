@@ -18,7 +18,7 @@ struct ContentView: View {
             
             VStack{
                 Spacer()
-                NavigationLink (destination: CaptureView()) {
+                NavigationLink (destination: RgbdCaptureView()) {
                     Text(Image(systemName: "plus.circle.fill")) + Text("Start new scan")
                 }.padding()
                     .foregroundColor(.white)

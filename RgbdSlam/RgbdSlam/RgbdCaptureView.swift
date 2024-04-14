@@ -7,12 +7,12 @@
 
 import SwiftUI
 
-struct CaptureView: View {
+struct RgbdCaptureView: View {
     var body: some View {
-        Text("Strat Capture")
+        GLKViewControllerWrapper()
     }
 }
 
 #Preview {
-    CaptureView()
+    RgbdCaptureView()
 }
