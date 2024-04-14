@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		DE0C565C2BCB825000D54FEC /* Zip in Frameworks */ = {isa = PBXBuildFile; productRef = DE0C565B2BCB825000D54FEC /* Zip */; };
 		DE0C56602BCC419400D54FEC /* RgbdCaptureExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0C565F2BCC419400D54FEC /* RgbdCaptureExtensions.swift */; };
+		DE0C56612BCC4E0400D54FEC /* SettingMappingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC70142BCB2C9100CDB669 /* SettingMappingView.swift */; };
+		DE0C56642BCC8A4900D54FEC /* KeychainSwift in Frameworks */ = {isa = PBXBuildFile; productRef = DE0C56632BCC8A4900D54FEC /* KeychainSwift */; };
 		DE0C8D3F2BC9D0200085B038 /* RgbdSlamApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0C8D3E2BC9D0200085B038 /* RgbdSlamApp.swift */; };
 		DE0C8D412BC9D0200085B038 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0C8D402BC9D0200085B038 /* ContentView.swift */; };
 		DE0C8D432BC9D0200085B038 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0C8D422BC9D0200085B038 /* Item.swift */; };
@@ -157,7 +159,6 @@
 		DEFC70112BCB163D00CDB669 /* Mapping.plist in Resources */ = {isa = PBXBuildFile; fileRef = DEC818B02BCAFF9000568052 /* Mapping.plist */; };
 		DEFC70122BCB163D00CDB669 /* Root.plist in Resources */ = {isa = PBXBuildFile; fileRef = DEC818AF2BCAFF8F00568052 /* Root.plist */; };
 		DEFC70132BCB163D00CDB669 /* Assembling.plist in Resources */ = {isa = PBXBuildFile; fileRef = DEC818AE2BCAFF8F00568052 /* Assembling.plist */; };
-		DEFC70152BCB2C9100CDB669 /* SettingMappingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC70142BCB2C9100CDB669 /* SettingMappingView.swift */; };
 		DEFC70172BCB2CAB00CDB669 /* SettingAssembleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC70162BCB2CAB00CDB669 /* SettingAssembleView.swift */; };
 		DEFC70192BCB376800CDB669 /* SettingsUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC70182BCB376800CDB669 /* SettingsUtil.swift */; };
 		DEFC701B2BCB5B1A00CDB669 /* SettingOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC701A2BCB5B1A00CDB669 /* SettingOptions.swift */; };
@@ -432,6 +433,7 @@
 				DE0C8E7F2BC9E5C70085B038 /* libopencv_shape.a in Frameworks */,
 				DE0C8E802BC9E5C70085B038 /* libopencv_stitching.a in Frameworks */,
 				DE0C8E812BC9E5C70085B038 /* libopencv_structured_light.a in Frameworks */,
+				DE0C56642BCC8A4900D54FEC /* KeychainSwift in Frameworks */,
 				DE0C8E822BC9E5C70085B038 /* libopencv_surface_matching.a in Frameworks */,
 				DE0C8E832BC9E5C70085B038 /* libopencv_text.a in Frameworks */,
 				DE0C8E842BC9E5C70085B038 /* libopencv_tracking.a in Frameworks */,
@@ -756,6 +758,7 @@
 			name = RgbdSlam;
 			packageProductDependencies = (
 				DE0C565B2BCB825000D54FEC /* Zip */,
+				DE0C56632BCC8A4900D54FEC /* KeychainSwift */,
 			);
 			productName = RgbdSlam;
 			productReference = DE0C8D3B2BC9D0200085B038 /* RgbdSlam.app */;
@@ -832,6 +835,7 @@
 			mainGroup = DE0C8D322BC9D01F0085B038;
 			packageReferences = (
 				DE0C565A2BCB825000D54FEC /* XCRemoteSwiftPackageReference "Zip" */,
+				DE0C56622BCC8A4900D54FEC /* XCRemoteSwiftPackageReference "keychain-swift" */,
 			);
 			productRefGroup = DE0C8D3C2BC9D0200085B038 /* Products */;
 			projectDirPath = "";
@@ -885,7 +889,6 @@
 				DE0C8DB22BC9E2980085B038 /* band.cpp in Sources */,
 				DE0C8D962BC9E2840085B038 /* CameraMobile.cpp in Sources */,
 				DE0C8DC32BC9E2980085B038 /* cube.cpp in Sources */,
-				DEFC70152BCB2C9100CDB669 /* SettingMappingView.swift in Sources */,
 				DEC818A92BCA941500568052 /* UserSettingsModel.swift in Sources */,
 				DE0C8DC72BC9E2980085B038 /* conversions.cpp in Sources */,
 				DE0C8D8C2BC9E2840085B038 /* scene.cpp in Sources */,
@@ -897,6 +900,7 @@
 				DEEEA8E72BCA84670001E09D /* RgbdCaptureView.swift in Sources */,
 				DE0C8DB62BC9E2980085B038 /* gesture_camera.cpp in Sources */,
 				DE0C8DC02BC9E2980085B038 /* texture.cpp in Sources */,
+				DE0C56612BCC4E0400D54FEC /* SettingMappingView.swift in Sources */,
 				DE0C8DC12BC9E2980085B038 /* grid.cpp in Sources */,
 				DE0C8DBA2BC9E2980085B038 /* drawable_object.cpp in Sources */,
 				DE0C8D8E2BC9E2840085B038 /* point_cloud_drawable.cpp in Sources */,
@@ -1347,6 +1351,14 @@
 				minimumVersion = 2.1.2;
 			};
 		};
+		DE0C56622BCC8A4900D54FEC /* XCRemoteSwiftPackageReference "keychain-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/evgenyneu/keychain-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 22.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1354,6 +1366,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DE0C565A2BCB825000D54FEC /* XCRemoteSwiftPackageReference "Zip" */;
 			productName = Zip;
+		};
+		DE0C56632BCC8A4900D54FEC /* KeychainSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DE0C56622BCC8A4900D54FEC /* XCRemoteSwiftPackageReference "keychain-swift" */;
+			productName = KeychainSwift;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -52,7 +52,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     private var mReviewRequested = false
     
     
-    lazy var  testBtn : UIButton = {
+    lazy var testBtn : UIButton = {
         let btn = UIButton(type: .roundedRect)
         btn.setTitle("Scan", for: .normal)
         btn.translatesAutoresizingMaskIntoConstraints = false
@@ -77,6 +77,11 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     }
     
     // MARK: Functions
+    func registerSettingsBundle(){
+        let appDefaults = [String:AnyObject]()
+        UserDefaults.standard.register(defaults: appDefaults)
+    }
+    
     func setGLCamera(type: Int)
     {
         cameraMode = type
@@ -224,6 +229,8 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         
         
         rtabmap!.addObserver(self)
+        registerSettingsBundle()
+        updateDisplayFromDefaults()
         
         maxPolygonsPickerView = UIPickerView(frame: CGRect(x: 10, y: 50, width: 250, height: 150))
         maxPolygonsPickerView.delegate = self
@@ -397,6 +404,98 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         }
     }
 
+    // MARK: RTABMap Settings
+    func updateDisplayFromDefaults()
+    {
+        //Get the defaults
+        let defaults = UserDefaults.standard
+ 
+        //let appendMode = defaults.bool(forKey: "AppendMode")
+        
+        // update preference
+        rtabmap!.setOnlineBlending(enabled: defaults.bool(forKey: "Blending"));
+        rtabmap!.setNodesFiltering(enabled: defaults.bool(forKey: "NodesFiltering"));
+        rtabmap!.setFullResolution(enabled: defaults.bool(forKey: "HDMode"));
+        rtabmap!.setSmoothing(enabled: defaults.bool(forKey: "Smoothing"));
+        rtabmap!.setAppendMode(enabled: defaults.bool(forKey: "AppendMode"));
+        
+        mTimeThr = (defaults.string(forKey: "TimeLimit")! as NSString).integerValue
+        mMaxFeatures = (defaults.string(forKey: "MaxFeaturesExtractedLoopClosure")! as NSString).integerValue
+        
+        // Mapping parameters
+        rtabmap!.setMappingParameter(key: "Rtabmap/DetectionRate", value: defaults.string(forKey: "UpdateRate")!);
+        rtabmap!.setMappingParameter(key: "Rtabmap/TimeThr", value: defaults.string(forKey: "TimeLimit")!);
+        rtabmap!.setMappingParameter(key: "Rtabmap/MemoryThr", value: defaults.string(forKey: "MemoryLimit")!);
+        rtabmap!.setMappingParameter(key: "RGBD/LinearSpeedUpdate", value: defaults.string(forKey: "MaximumMotionSpeed")!);
+        let motionSpeed = ((defaults.string(forKey: "MaximumMotionSpeed")!) as NSString).floatValue/2.0;
+        rtabmap!.setMappingParameter(key: "RGBD/AngularSpeedUpdate", value: NSString(format: "%.2f", motionSpeed) as String);
+        rtabmap!.setMappingParameter(key: "Rtabmap/LoopThr", value: defaults.string(forKey: "LoopClosureThreshold")!);
+        rtabmap!.setMappingParameter(key: "Mem/RehearsalSimilarity", value: defaults.string(forKey: "SimilarityThreshold")!);
+        rtabmap!.setMappingParameter(key: "Kp/MaxFeatures", value: defaults.string(forKey: "MaxFeaturesExtractedVocabulary")!);
+        rtabmap!.setMappingParameter(key: "Vis/MaxFeatures", value: defaults.string(forKey: "MaxFeaturesExtractedLoopClosure")!);
+        rtabmap!.setMappingParameter(key: "Vis/MinInliers", value: defaults.string(forKey: "MinInliers")!);
+        rtabmap!.setMappingParameter(key: "RGBD/OptimizeMaxError", value: defaults.string(forKey: "MaxOptimizationError")!);
+        rtabmap!.setMappingParameter(key: "Kp/DetectorStrategy", value: defaults.string(forKey: "FeatureType")!);
+        rtabmap!.setMappingParameter(key: "Vis/FeatureType", value: defaults.string(forKey: "FeatureType")!);
+        rtabmap!.setMappingParameter(key: "Mem/NotLinkedNodesKept", value: defaults.bool(forKey: "SaveAllFramesInDatabase") ? "true" : "false");
+        rtabmap!.setMappingParameter(key: "RGBD/OptimizeFromGraphEnd", value: defaults.bool(forKey: "OptimizationfromGraphEnd") ? "true" : "false");
+        rtabmap!.setMappingParameter(key: "RGBD/MaxOdomCacheSize", value: defaults.string(forKey: "MaximumOdometryCacheSize")!);
+        rtabmap!.setMappingParameter(key: "Optimizer/Strategy", value: defaults.string(forKey: "GraphOptimizer")!);
+        rtabmap!.setMappingParameter(key: "RGBD/ProximityBySpace", value: defaults.string(forKey: "ProximityDetection")!);
+
+        let markerDetection = defaults.integer(forKey: "ArUcoMarkerDetection")
+        if(markerDetection == -1)
+        {
+            rtabmap!.setMappingParameter(key: "RGBD/MarkerDetection", value: "false");
+        }
+        else
+        {
+            rtabmap!.setMappingParameter(key: "RGBD/MarkerDetection", value: "true");
+            rtabmap!.setMappingParameter(key: "Marker/Dictionary", value: defaults.string(forKey: "ArUcoMarkerDetection")!);
+            rtabmap!.setMappingParameter(key: "Marker/CornerRefinementMethod", value: (markerDetection > 16 ? "3":"0"));
+            rtabmap!.setMappingParameter(key: "Marker/MaxDepthError", value: defaults.string(forKey: "MarkerDepthErrorEstimation")!);
+            if let val = NumberFormatter().number(from: defaults.string(forKey: "MarkerSize")!)?.doubleValue
+            {
+                rtabmap!.setMappingParameter(key: "Marker/Length", value: String(format: "%f", val/100.0))
+            }
+            else{
+                rtabmap!.setMappingParameter(key: "Marker/Length", value: "0")
+            }
+        }
+
+        // Rendering
+        rtabmap!.setCloudDensityLevel(value: defaults.integer(forKey: "PointCloudDensity"));
+        rtabmap!.setMaxCloudDepth(value: defaults.float(forKey: "MaxDepth"));
+        rtabmap!.setMinCloudDepth(value: defaults.float(forKey: "MinDepth"));
+        rtabmap!.setDepthConfidence(value: defaults.integer(forKey: "DepthConfidence"));
+        rtabmap!.setPointSize(value: defaults.float(forKey: "PointSize"));
+        rtabmap!.setMeshAngleTolerance(value: defaults.float(forKey: "MeshAngleTolerance"));
+        rtabmap!.setMeshTriangleSize(value: defaults.integer(forKey: "MeshTriangleSize"));
+        rtabmap!.setMeshDecimationFactor(value: defaults.float(forKey: "MeshDecimationFactor"));
+        let bgColor = defaults.float(forKey: "BackgroundColor");
+        rtabmap!.setBackgroundColor(gray: bgColor);
+        
+//        DispatchQueue.main.async {
+//            self.statusLabel.textColor = bgColor>=0.6 ? UIColor(white: 0.0, alpha: 1) : UIColor(white: 1.0, alpha: 1)
+//        }
+    
+        rtabmap!.setClusterRatio(value: defaults.float(forKey: "NoiseFilteringRatio"));
+        rtabmap!.setMaxGainRadius(value: defaults.float(forKey: "ColorCorrectionRadius"));
+        rtabmap!.setRenderingTextureDecimation(value: defaults.integer(forKey: "TextureResolution"));
+        
+        if(locationManager != nil && !defaults.bool(forKey: "SaveGPS"))
+        {
+            locationManager?.stopUpdatingLocation()
+            locationManager = nil
+            mLastKnownLocation = nil
+        }
+        else if(locationManager == nil && defaults.bool(forKey: "SaveGPS"))
+        {
+            locationManager = CLLocationManager()
+            locationManager?.desiredAccuracy = kCLLocationAccuracyBestForNavigation
+            locationManager?.delegate = self
+        }
+    }
     
     // MARK: RTABMap protocols
     
