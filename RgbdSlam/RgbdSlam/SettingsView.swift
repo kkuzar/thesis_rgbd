@@ -121,6 +121,12 @@ struct SettingsView: View {
                         }
                     }
                 }
+                
+                Section("Configure AWS Connection") {
+                    NavigationLink (destination: SettingAWSView()) {
+                        Text("Setup S3 Access ...")
+                    }
+                }
             }
         }
         .navigationTitle("Settings")

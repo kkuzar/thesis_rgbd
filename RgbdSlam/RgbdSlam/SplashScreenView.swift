@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-
 struct SplashScreenView: View {
     @State private var isLoaded = false
     @State private var size = 0.95
