@@ -158,6 +158,7 @@
 		DE0C8E9B2BC9E5C70085B038 /* librtabmap_core.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DE0C8DCF2BC9E3770085B038 /* librtabmap_core.a */; };
 		DE0C8E9C2BC9E5C70085B038 /* librtabmap_utilite.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DE0C8DDF2BC9E3770085B038 /* librtabmap_utilite.a */; };
 		DE0C8E9D2BC9F02F0085B038 /* NativeWrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DE0C8D712BC9E2420085B038 /* NativeWrapper.cpp */; };
+		DE994CD32BCDD14F00951BF1 /* Zip in Frameworks */ = {isa = PBXBuildFile; productRef = DE994CD22BCDD14F00951BF1 /* Zip */; };
 		DEC818A92BCA941500568052 /* UserSettingsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEC818A82BCA941500568052 /* UserSettingsModel.swift */; };
 		DEC818AD2BCAAB9800568052 /* SplashScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEC818AC2BCAAB9800568052 /* SplashScreenView.swift */; };
 		DEEEA8E12BCA0C240001E09D /* vtk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE0C8E342BC9E4070085B038 /* vtk.framework */; };
@@ -353,6 +354,7 @@
 		DE0C8E322BC9E3CA0085B038 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		DE0C8E342BC9E4070085B038 /* vtk.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = vtk.framework; path = ../lib/vtk.framework; sourceTree = "<group>"; };
 		DE0C8E9E2BC9F38F0085B038 /* RgbdSlam-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RgbdSlam-Bridging-Header.h"; sourceTree = "<group>"; };
+		DE994CD82BCDF00B00951BF1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		DEC818A82BCA941500568052 /* UserSettingsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettingsModel.swift; sourceTree = "<group>"; };
 		DEC818AC2BCAAB9800568052 /* SplashScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreenView.swift; sourceTree = "<group>"; };
 		DEC818AE2BCAFF8F00568052 /* Assembling.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Assembling.plist; sourceTree = "<group>"; };
@@ -463,6 +465,7 @@
 				DEEEA8E12BCA0C240001E09D /* vtk.framework in Frameworks */,
 				DE0C8E8C2BC9E5C70085B038 /* libpcl_features.a in Frameworks */,
 				DE0C8E8D2BC9E5C70085B038 /* libpcl_filters.a in Frameworks */,
+				DE994CD32BCDD14F00951BF1 /* Zip in Frameworks */,
 				DE0C568E2BCCBB3F00D54FEC /* FirebaseAuthCombine-Community in Frameworks */,
 				DE0C8E8E2BC9E5C70085B038 /* libpcl_io_ply.a in Frameworks */,
 				DE0C8E8F2BC9E5C70085B038 /* libpcl_io.a in Frameworks */,
@@ -562,6 +565,7 @@
 		DE0C8D3D2BC9D0200085B038 /* RgbdSlam */ = {
 			isa = PBXGroup;
 			children = (
+				DE994CD82BCDF00B00951BF1 /* Info.plist */,
 				DE0C56732BCC8E7300D54FEC /* RgbdCapture */,
 				DE0C566F2BCC8DE400D54FEC /* OtherFiles */,
 				DE0C566E2BCC8DBD00D54FEC /* Settings */,
@@ -809,6 +813,7 @@
 				DE0C56A52BCCBB4600D54FEC /* FirebaseInstallations */,
 				DE0C56B12BCCBB4A00D54FEC /* FirebaseStorage */,
 				DE0C56B32BCCBB4B00D54FEC /* FirebaseStorageCombine-Community */,
+				DE994CD22BCDD14F00951BF1 /* Zip */,
 			);
 			productName = RgbdSlam;
 			productReference = DE0C8D3B2BC9D0200085B038 /* RgbdSlam.app */;
@@ -1080,6 +1085,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "";
+				INFOPLIST_FILE = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 14.2;
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../Libraries/lib\"",
@@ -1164,6 +1170,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "";
+				INFOPLIST_FILE = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 14.2;
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../Libraries/lib\"",
@@ -1209,6 +1216,7 @@
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = RgbdSlam/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Kuzar Thesis (HAMK)";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -1253,6 +1261,7 @@
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = RgbdSlam/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Kuzar Thesis (HAMK)";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -1467,6 +1476,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DE0C567E2BCCB91F00D54FEC /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = "FirebaseStorageCombine-Community";
+		};
+		DE994CD22BCDD14F00951BF1 /* Zip */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DE0C565A2BCB825000D54FEC /* XCRemoteSwiftPackageReference "Zip" */;
+			productName = Zip;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

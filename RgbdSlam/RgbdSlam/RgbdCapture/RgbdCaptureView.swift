@@ -13,10 +13,10 @@ struct RgbdCaptureView: View {
     var body: some View {
         RGBDCaptureViewControllerWrapper()
             .edgesIgnoringSafeArea(.all)
-            .highPriorityGesture(TapGesture().onEnded { _ in
-                // This is just to show where you might configure SwiftUI to ignore gestures.
-                // This might not be necessary if your UIKit handles gestures properly.
-            })
+//            .highPriorityGesture(SimultaneousGesture.onChanged() { _ in
+//                // This is just to show where you might configure SwiftUI to ignore gestures.
+//                // This might not be necessary if your UIKit handles gestures properly.
+//            })
     }
 }
 

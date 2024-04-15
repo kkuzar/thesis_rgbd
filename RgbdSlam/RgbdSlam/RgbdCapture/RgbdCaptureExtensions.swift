@@ -8,17 +8,6 @@
 import Foundation
 import StoreKit
 
-//enum State {
-//    case STATE_WELCOME,    // Camera/Motion off - showing only buttons open and start new scan
-//         STATE_CAMERA,          // Camera/Motion on - not mapping
-//         STATE_MAPPING,         // Camera/Motion on - mapping
-//         STATE_IDLE,            // Camera/Motion off
-//         STATE_PROCESSING,      // Camera/Motion off - post processing
-//         STATE_VISUALIZING,     // Camera/Motion off - Showing optimized mesh
-//         STATE_VISUALIZING_CAMERA,     // Camera/Motion on  - Showing optimized mesh
-//         STATE_VISUALIZING_WHILE_LOADING // Camera/Motion off - Loading data while showing optimized mesh
-//}
-
 extension SKStoreReviewController {
     public static func requestReviewInCurrentScene() {
         if let scene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene {
@@ -38,6 +27,52 @@ extension DispatchQueue {
                 })
             }
         }
+    }
+}
+
+
+extension Date {
+   func getFormattedDate(format: String) -> String {
+        let dateformat = DateFormatter()
+        dateformat.dateFormat = format
+        return dateformat.string(from: self)
+    }
+    
+    var millisecondsSince1970:Int64 {
+        Int64((self.timeIntervalSince1970 * 1000.0).rounded())
+    }
+    
+    init(milliseconds:Int64) {
+        self = Date(timeIntervalSince1970: TimeInterval(milliseconds) / 1000)
+    }
+}
+
+extension Array {
+    func size() -> Int {
+        return MemoryLayout<Element>.stride * self.count
+    }
+}
+
+extension URL {
+    var attributes: [FileAttributeKey : Any]? {
+        do {
+            return try FileManager.default.attributesOfItem(atPath: path)
+        } catch let error as NSError {
+            print("FileAttribute error: \(error)")
+        }
+        return nil
+    }
+
+    var fileSize: UInt64 {
+        return attributes?[.size] as? UInt64 ?? UInt64(0)
+    }
+
+    var fileSizeString: String {
+        return ByteCountFormatter.string(fromByteCount: Int64(fileSize), countStyle: .file)
+    }
+
+    var creationDate: Date? {
+        return attributes?[.creationDate] as? Date
     }
 }
 

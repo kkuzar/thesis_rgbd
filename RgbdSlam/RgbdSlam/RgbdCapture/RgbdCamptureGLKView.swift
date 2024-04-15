@@ -9,6 +9,7 @@ import SwiftUI
 import GLKit
 import ARKit
 import StoreKit
+import Zip
 
 struct RGBDCaptureViewControllerWrapper: UIViewControllerRepresentable {
     
@@ -107,26 +108,25 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     let RTABMAP_RECOVERY_DB = "rtabmap.tmp.recovery.db"
     let RTABMAP_EXPORT_DIR = "Export"
     
-    lazy var testBtn : UIButton = {
-        let btn = UIButton(type: .roundedRect)
-        btn.setTitle("Scan", for: .normal)
-        btn.translatesAutoresizingMaskIntoConstraints = false
-        return btn
-    }()
+    // MARK: UI Component
     
-    private var labelTest: UILabel!
+    // Button
+    let newScanBtn = UIButton()
+    let startRecordBtn = UIButton()
+    let finishRecordBtn = UIButton()
+    let stopCameraBtn = UIButton()
     
-    lazy var toastLabel: UILabel = {
-        let lbl = UILabel()
-        return lbl
-    }()
+    // Label
+    let statusLabel = UILabel()
+    let toastLabel = UILabel()
     
-    let centerButton = UIButton()
-    let topRightButton = UIButton()
-    let bottomRightButton = UIButton()
-    let bottomCenterButton = UIButton()
+    
     
     // MARK: Functions
+    
+    @objc func defaultsChanged(){
+        updateDisplayFromDefaults()
+    }
     
     func showToast(message : String, seconds: Double){
         if(!self.toastLabel.isHidden)
@@ -140,32 +140,32 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         }
     }
     
-    //        @objc func appMovedToBackground() {
-    //            if(mState == .STATE_VISUALIZING_CAMERA || mState == .STATE_MAPPING || mState == .STATE_CAMERA)
-    //            {
-    //                stopMapping(ignoreSaving: true)
-    //            }
-    //        }
-    //
-    //        @objc func appMovedToForeground() {
-    //            updateDisplayFromDefaults()
-    //
-    //            if(mMapNodes > 0 && self.openedDatabasePath == nil)
-    //            {
-    //                let msg = "RTAB-Map has been pushed to background while mapping. Do you want to save the map now?"
-    //                let alert = UIAlertController(title: "Mapping Stopped!", message: msg, preferredStyle: .alert)
-    //                let alertActionNo = UIAlertAction(title: "Ignore", style: .cancel) {
-    //                    (UIAlertAction) -> Void in
-    //                }
-    //                alert.addAction(alertActionNo)
-    //                let alertActionYes = UIAlertAction(title: "Yes", style: .default) {
-    //                    (UIAlertAction) -> Void in
-    //                    self.save()
-    //                }
-    //                alert.addAction(alertActionYes)
-    //                self.present(alert, animated: true, completion: nil)
-    //            }
-    //        }
+    @objc func appMovedToBackground() {
+        if(mState == .STATE_VISUALIZING_CAMERA || mState == .STATE_MAPPING || mState == .STATE_CAMERA)
+        {
+            stopMapping(ignoreSaving: true)
+        }
+    }
+    
+    @objc func appMovedToForeground() {
+        updateDisplayFromDefaults()
+        
+        if(mMapNodes > 0 && self.openedDatabasePath == nil)
+        {
+            let msg = "RTAB-Map has been pushed to background while mapping. Do you want to save the map now?"
+            let alert = UIAlertController(title: "Mapping Stopped!", message: msg, preferredStyle: .alert)
+            let alertActionNo = UIAlertAction(title: "Ignore", style: .cancel) {
+                (UIAlertAction) -> Void in
+            }
+            alert.addAction(alertActionNo)
+            let alertActionYes = UIAlertAction(title: "Yes", style: .default) {
+                (UIAlertAction) -> Void in
+                self.save()
+            }
+            alert.addAction(alertActionYes)
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
     
     func getDocumentDirectory() -> URL {
         return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
@@ -333,140 +333,6 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         updateState(state: .STATE_IDLE);
     }
     
-    func newScan()
-    {
-        //        print("databases.size() = \(databases.size())")
-        //        if(databases.count >= 5 && !mReviewRequested && self.depthSupported)
-        //        {
-        //            SKStoreReviewController.requestReviewInCurrentScene()
-        //            mReviewRequested = true
-        //        }
-        
-        if(mState == State.STATE_VISUALIZING)
-        {
-            closeVisualization()
-        }
-        
-        mMapNodes = 0;
-        self.openedDatabasePath = nil
-        //let tmpDatabase = self.getDocumentDirectory().appendingPathComponent(self.RTABMAP_TMP_DB)
-        let inMemory = UserDefaults.standard.bool(forKey: "DatabaseInMemory")
-        //        if(!(self.mState == State.STATE_CAMERA || self.mState == State.STATE_MAPPING) &&
-        //           FileManager.default.fileExists(atPath: tmpDatabase.path) &&
-        //           tmpDatabase.fileSize > 1024*1024) // > 1MB
-        //        {
-        //            dismiss(animated: true, completion: {
-        //                let msg = "The previous session (\(tmpDatabase.fileSizeString)) was not correctly saved, do you want to recover it?"
-        //                let alert = UIAlertController(title: "Recovery", message: msg, preferredStyle: .alert)
-        //                let alertActionNo = UIAlertAction(title: "Ignore", style: .destructive) {
-        //                    (UIAlertAction) -> Void in
-        //                    do {
-        //                        try FileManager.default.removeItem(at: tmpDatabase)
-        //                    }
-        //                    catch {
-        //                        print("Could not clear tmp database: \(error)")
-        //                    }
-        //                    self.newScan()
-        //                }
-        //                alert.addAction(alertActionNo)
-        //                let alertActionCancel = UIAlertAction(title: "Cancel", style: .cancel) {
-        //                    (UIAlertAction) -> Void in
-        //                    // do nothing
-        //                }
-        //                alert.addAction(alertActionCancel)
-        //                let alertActionYes = UIAlertAction(title: "Yes", style: .default) {
-        //                    (UIAlertAction2) -> Void in
-        //
-        //                    let fileName = Date().getFormattedDate(format: "yyMMdd-HHmmss") + ".db"
-        //                    let outputDbPath = self.getDocumentDirectory().appendingPathComponent(fileName).path
-        //
-        //                    var indicator: UIActivityIndicatorView?
-        //
-        //                    let alertView = UIAlertController(title: "Recovering", message: "Please wait while recovering data...", preferredStyle: .alert)
-        //                    let alertViewActionCancel = UIAlertAction(title: "Cancel", style: .cancel) {
-        //                        (UIAlertAction) -> Void in
-        //                        self.dismiss(animated: true, completion: {
-        //                            self.progressView = nil
-        //
-        //                            indicator = UIActivityIndicatorView(style: .large)
-        //                            indicator?.frame = CGRect(x: 0.0, y: 0.0, width: 60.0, height: 60.0)
-        //                            indicator?.center = self.view.center
-        //                            self.view.addSubview(indicator!)
-        //                            indicator?.bringSubviewToFront(self.view)
-        //
-        //                            indicator?.startAnimating()
-        //                            self.rtabmap!.cancelProcessing();
-        //                        })
-        //                    }
-        //                    alertView.addAction(alertViewActionCancel)
-        //
-        //                    let previousState = self.mState
-        //                    self.updateState(state: .STATE_PROCESSING);
-        //
-        //                    self.present(alertView, animated: true, completion: {
-        //                        //  Add your progressbar after alert is shown (and measured)
-        //                        let margin:CGFloat = 8.0
-        //                        let rect = CGRect(x: margin, y: 84.0, width: alertView.view.frame.width - margin * 2.0 , height: 2.0)
-        //                        self.progressView = UIProgressView(frame: rect)
-        //                        self.progressView!.progress = 0
-        //                        self.progressView!.tintColor = self.view.tintColor
-        //                        alertView.view.addSubview(self.progressView!)
-        //
-        //                        var success : Bool = false
-        //                        DispatchQueue.background(background: {
-        //
-        //                            success = self.rtabmap!.recover(from: tmpDatabase.path, to: outputDbPath)
-        //
-        //                        }, completion:{
-        //                            if(indicator != nil)
-        //                            {
-        //                                indicator!.stopAnimating()
-        //                                indicator!.removeFromSuperview()
-        //                            }
-        //                            if self.progressView != nil
-        //                            {
-        //                                self.dismiss(animated: self.openedDatabasePath == nil, completion: {
-        //                                    if(success)
-        //                                    {
-        //                                        let alertSaved = UIAlertController(title: "Database saved!", message: String(format: "Database \"%@\" successfully recovered!", fileName), preferredStyle: .alert)
-        //                                        let yes = UIAlertAction(title: "OK", style: .default) {
-        //                                            (UIAlertAction) -> Void in
-        //                                            self.openDatabase(fileUrl: URL(fileURLWithPath: outputDbPath))
-        //                                        }
-        //                                        alertSaved.addAction(yes)
-        //                                        self.present(alertSaved, animated: true, completion: nil)
-        //                                    }
-        //                                    else
-        //                                    {
-        //                                        self.updateState(state: previousState);
-        //                                        self.showToast(message: "Recovery failed!", seconds: 4)
-        //                                    }
-        //                                })
-        //                            }
-        //                            else
-        //                            {
-        //                                self.showToast(message: "Recovery canceled", seconds: 2)
-        //                                self.updateState(state: previousState);
-        //                            }
-        //                        })
-        //                    })
-        //                }
-        //                alert.addAction(alertActionYes)
-        //                self.present(alert, animated: true, completion: nil)
-        //            })
-        //        }
-        //        else
-        //        {
-        self.rtabmap!.openDatabase(databasePath: "", databaseInMemory: true, optimize: false, clearDatabase: true)
-        
-        if(!(self.mState == State.STATE_CAMERA || self.mState == State.STATE_MAPPING))
-        {
-            self.setGLCamera(type: 0);
-            self.startCamera();
-        }
-        //        }
-    }
-    
     func startCamera()
     {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
@@ -541,6 +407,268 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         }
     }
     
+    func resumeScan()
+    {
+        if(mState == State.STATE_VISUALIZING)
+        {
+            closeVisualization()
+            rtabmap!.postExportation(visualize: false)
+        }
+        
+        let alertController = UIAlertController(title: "Append Mode", message: "The camera preview will not be aligned to map on start, move to a previously scanned area, then push Record. When a loop closure is detected, new scans will be appended to map.", preferredStyle: .alert)
+
+        let okAction = UIAlertAction(title: "OK", style: .default) { (action) in
+        }
+        alertController.addAction(okAction)
+        
+        present(alertController, animated: true)
+        
+        setGLCamera(type: 0);
+        startCamera();
+    }
+    
+    func newScan()
+    {
+        print("databases.size() = \(databases.size())")
+        if(databases.count >= 5 && !mReviewRequested && self.depthSupported)
+        {
+            SKStoreReviewController.requestReviewInCurrentScene()
+            mReviewRequested = true
+        }
+        
+        if(mState == State.STATE_VISUALIZING)
+        {
+            closeVisualization()
+        }
+        
+        mMapNodes = 0;
+        self.openedDatabasePath = nil
+        let tmpDatabase = self.getDocumentDirectory().appendingPathComponent(self.RTABMAP_TMP_DB)
+        let inMemory = UserDefaults.standard.bool(forKey: "DatabaseInMemory")
+        if(!(self.mState == State.STATE_CAMERA || self.mState == State.STATE_MAPPING) &&
+           FileManager.default.fileExists(atPath: tmpDatabase.path) &&
+           tmpDatabase.fileSize > 1024*1024) // > 1MB
+        {
+            dismiss(animated: true, completion: {
+                let msg = "The previous session (\(tmpDatabase.fileSizeString)) was not correctly saved, do you want to recover it?"
+                let alert = UIAlertController(title: "Recovery", message: msg, preferredStyle: .alert)
+                let alertActionNo = UIAlertAction(title: "Ignore", style: .destructive) {
+                    (UIAlertAction) -> Void in
+                    do {
+                        try FileManager.default.removeItem(at: tmpDatabase)
+                    }
+                    catch {
+                        print("Could not clear tmp database: \(error)")
+                    }
+                    self.newScan()
+                }
+                alert.addAction(alertActionNo)
+                let alertActionCancel = UIAlertAction(title: "Cancel", style: .cancel) {
+                    (UIAlertAction) -> Void in
+                    // do nothing
+                }
+                alert.addAction(alertActionCancel)
+                let alertActionYes = UIAlertAction(title: "Yes", style: .default) {
+                    (UIAlertAction2) -> Void in
+
+                    let fileName = Date().getFormattedDate(format: "yyMMdd-HHmmss") + ".db"
+                    let outputDbPath = self.getDocumentDirectory().appendingPathComponent(fileName).path
+                    
+                    var indicator: UIActivityIndicatorView?
+                    
+                    let alertView = UIAlertController(title: "Recovering", message: "Please wait while recovering data...", preferredStyle: .alert)
+                    let alertViewActionCancel = UIAlertAction(title: "Cancel", style: .cancel) {
+                        (UIAlertAction) -> Void in
+                        self.dismiss(animated: true, completion: {
+                            self.progressView = nil
+                            
+                            indicator = UIActivityIndicatorView(style: .large)
+                            indicator?.frame = CGRect(x: 0.0, y: 0.0, width: 60.0, height: 60.0)
+                            indicator?.center = self.view.center
+                            self.view.addSubview(indicator!)
+                            indicator?.bringSubviewToFront(self.view)
+                            
+                            indicator?.startAnimating()
+                            self.rtabmap!.cancelProcessing();
+                        })
+                    }
+                    alertView.addAction(alertViewActionCancel)
+                    
+                    let previousState = self.mState
+                    self.updateState(state: .STATE_PROCESSING);
+                    
+                    self.present(alertView, animated: true, completion: {
+                        //  Add your progressbar after alert is shown (and measured)
+                        let margin:CGFloat = 8.0
+                        let rect = CGRect(x: margin, y: 84.0, width: alertView.view.frame.width - margin * 2.0 , height: 2.0)
+                        self.progressView = UIProgressView(frame: rect)
+                        self.progressView!.progress = 0
+                        self.progressView!.tintColor = self.view.tintColor
+                        alertView.view.addSubview(self.progressView!)
+                        
+                        var success : Bool = false
+                        DispatchQueue.background(background: {
+                            
+                            success = self.rtabmap!.recover(from: tmpDatabase.path, to: outputDbPath)
+                            
+                        }, completion:{
+                            if(indicator != nil)
+                            {
+                                indicator!.stopAnimating()
+                                indicator!.removeFromSuperview()
+                            }
+                            if self.progressView != nil
+                            {
+                                self.dismiss(animated: self.openedDatabasePath == nil, completion: {
+                                    if(success)
+                                    {
+                                        let alertSaved = UIAlertController(title: "Database saved!", message: String(format: "Database \"%@\" successfully recovered!", fileName), preferredStyle: .alert)
+                                        let yes = UIAlertAction(title: "OK", style: .default) {
+                                            (UIAlertAction) -> Void in
+                                            self.openDatabase(fileUrl: URL(fileURLWithPath: outputDbPath))
+                                        }
+                                        alertSaved.addAction(yes)
+                                        self.present(alertSaved, animated: true, completion: nil)
+                                    }
+                                    else
+                                    {
+                                        self.updateState(state: previousState);
+                                        self.showToast(message: "Recovery failed!", seconds: 4)
+                                    }
+                                })
+                            }
+                            else
+                            {
+                                self.showToast(message: "Recovery canceled", seconds: 2)
+                                self.updateState(state: previousState);
+                            }
+                        })
+                    })
+                }
+                alert.addAction(alertActionYes)
+                self.present(alert, animated: true, completion: nil)
+            })
+        }
+        else
+        {
+            self.rtabmap!.openDatabase(databasePath: tmpDatabase.path, databaseInMemory: inMemory, optimize: false, clearDatabase: true)
+
+            if(!(self.mState == State.STATE_CAMERA || self.mState == State.STATE_MAPPING))
+            {
+                self.setGLCamera(type: 0);
+                self.startCamera();
+            }
+        }
+    }
+    
+    func save()
+    {
+        //Step : 1
+        let alert = UIAlertController(title: "Save Scan", message: "RTAB-Map Database Name (*.db):", preferredStyle: .alert )
+        //Step : 2
+        let save = UIAlertAction(title: "Save", style: .default) { (alertAction) in
+            let textField = alert.textFields![0] as UITextField
+            if textField.text != "" {
+                //Read TextFields text data
+                let fileName = textField.text!+".db"
+                let filePath = self.getDocumentDirectory().appendingPathComponent(fileName).path
+                if FileManager.default.fileExists(atPath: filePath) {
+                    let alert = UIAlertController(title: "File Already Exists", message: "Do you want to overwrite the existing file?", preferredStyle: .alert)
+                    let yes = UIAlertAction(title: "Yes", style: .default) {
+                        (UIAlertAction) -> Void in
+                        self.saveDatabase(fileName: fileName);
+                    }
+                    alert.addAction(yes)
+                    let no = UIAlertAction(title: "No", style: .cancel) {
+                        (UIAlertAction) -> Void in
+                    }
+                    alert.addAction(no)
+                    
+                    self.present(alert, animated: true, completion: nil)
+                } else {
+                    self.saveDatabase(fileName: fileName);
+                }
+            }
+        }
+
+        //Step : 3
+        var placeholder = Date().getFormattedDate(format: "yyMMdd-HHmmss")
+        if self.openedDatabasePath != nil && !self.openedDatabasePath!.path.isEmpty
+        {
+            var components = self.openedDatabasePath!.lastPathComponent.components(separatedBy: ".")
+            if components.count > 1 { // If there is a file extension
+                components.removeLast()
+                placeholder = components.joined(separator: ".")
+            } else {
+                placeholder = self.openedDatabasePath!.lastPathComponent
+            }
+        }
+        alert.addTextField { (textField) in
+                textField.text = placeholder
+        }
+
+        //Step : 4
+        alert.addAction(save)
+        //Cancel action
+        alert.addAction(UIAlertAction(title: "Cancel", style: .default) { (alertAction) in })
+
+        self.present(alert, animated: true) {
+            alert.textFields?.first?.selectAll(nil)
+        }
+    }
+    
+    func stopMapping(ignoreSaving: Bool)
+    {
+        session.pause()
+        locationManager?.stopUpdatingLocation()
+        rtabmap?.setPausedMapping(paused: true)
+        rtabmap?.stopCamera()
+        setGLCamera(type: 2)
+        if(mState == .STATE_VISUALIZING_CAMERA)
+        {
+            self.rtabmap?.setLocalizationMode(enabled: false)
+        }
+        updateState(state: mState == .STATE_VISUALIZING_CAMERA ? .STATE_VISUALIZING : .STATE_IDLE);
+        
+        if !ignoreSaving
+        {
+            dismiss(animated: true, completion: {
+                var msg = "Do you want to do standard graph optimization and make a nice assembled mesh now? This can be also done later using \"Optimize\" and \"Assemble\" menus."
+                let depthUsed = self.depthSupported && UserDefaults.standard.bool(forKey: "LidarMode")
+                if !depthUsed
+                {
+                    msg = "Do you want to do standard graph optimization now? This can be also done later using \"Optimize\" menu."
+                }
+                let alert = UIAlertController(title: "Mapping Stopped! Optimize Now?", message: msg, preferredStyle: .alert)
+                if depthUsed {
+                    let alertActionOnlyGraph = UIAlertAction(title: "Only Optimize", style: .default)
+                    {
+                        (UIAlertAction) -> Void in
+                        self.optimization(withStandardMeshExport: false, approach: -1)
+                    }
+                    alert.addAction(alertActionOnlyGraph)
+                }
+                let alertActionNo = UIAlertAction(title: "Save First", style: .cancel) {
+                    (UIAlertAction) -> Void in
+                    self.save()
+                }
+                alert.addAction(alertActionNo)
+                let alertActionYes = UIAlertAction(title: "Yes", style: .default) {
+                    (UIAlertAction) -> Void in
+                    self.optimization(withStandardMeshExport: depthUsed, approach: -1)
+                }
+                alert.addAction(alertActionYes)
+                self.present(alert, animated: true, completion: nil)
+            })
+        }
+        else if(mMapNodes == 0)
+        {
+            updateState(state: State.STATE_WELCOME);
+            statusLabel.text = ""
+        }
+    }
+    
+    
     // MARK: UIView Functions
     
     private func setupButton(_ button: UIButton, title: String, iconName: String = "") {
@@ -553,26 +681,37 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     private func applyConstraints() {
         // Center Button Constraints
         NSLayoutConstraint.activate([
-            centerButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            centerButton.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            newScanBtn.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            newScanBtn.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
         
         // StartRecord Button Constraints
         NSLayoutConstraint.activate([
-            topRightButton.topAnchor.constraint(equalTo: view.centerYAnchor, constant: 10),
-            topRightButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
+            startRecordBtn.topAnchor.constraint(equalTo: view.centerYAnchor, constant: 10),
+            startRecordBtn.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
         ])
         
         // StopRecord Button Constraints
         NSLayoutConstraint.activate([
-            bottomRightButton.topAnchor.constraint(equalTo: topRightButton.bottomAnchor, constant: 20),
-            bottomRightButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
+            finishRecordBtn.topAnchor.constraint(equalTo: startRecordBtn.bottomAnchor, constant: 20),
+            finishRecordBtn.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
         ])
         
         // Bottom Center Button Constraints
         NSLayoutConstraint.activate([
-            bottomCenterButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20),
-            bottomCenterButton.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+            stopCameraBtn.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20),
+            stopCameraBtn.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+        ])
+        
+        // Constraints for upper status label
+        NSLayoutConstraint.activate([
+            statusLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            statusLabel.bottomAnchor.constraint(equalTo: newScanBtn.topAnchor, constant: -20)
+        ])
+        
+        NSLayoutConstraint.activate([
+            toastLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            toastLabel.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -40)
         ])
     }
     
@@ -596,7 +735,6 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        
         depthSupported = ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth)
         
         rtabmap = RTABMap()
@@ -612,22 +750,39 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         }
         
         // Setup buttons
-        setupButton(centerButton, title: "Start the Camera", iconName: "camera.circle")
-        setupButton(topRightButton, title: "", iconName: "record.circle")
-        setupButton(bottomRightButton, title: "", iconName: "stop.circle")
-        setupButton(bottomCenterButton, title: "Stop the Camera", iconName: "xmark.circle.fill")
+        setupButton(newScanBtn, title: "Start the Camera", iconName: "camera.circle")
+        setupButton(startRecordBtn, title: "", iconName: "record.circle")
+        setupButton(finishRecordBtn, title: "", iconName: "stop.circle")
+        setupButton(stopCameraBtn, title: "Stop the Camera", iconName: "xmark.circle.fill")
         
-        centerButton.tintColor = .white
-        bottomCenterButton.tintColor = .white
-        bottomRightButton.tintColor = .white
+        newScanBtn.tintColor = .white
+        newScanBtn.addTarget(self, action: #selector(newScanAction), for: .touchUpInside)
+
+        finishRecordBtn.tintColor = .white
+        finishRecordBtn.addTarget(self, action: #selector(finishRecordAction), for: .touchUpInside)
         
-        topRightButton.tintColor = .systemRed
+        stopCameraBtn.tintColor = .white
+        stopCameraBtn.addTarget(self, action: #selector(stopCameraAction), for: .touchUpInside)
+        
+        startRecordBtn.tintColor = .systemRed
+        startRecordBtn.addTarget(self, action: #selector(startRecordAction), for: .touchUpInside)
+        
+        statusLabel.textAlignment = .left
+        statusLabel.backgroundColor = .red
+        statusLabel.translatesAutoresizingMaskIntoConstraints = false
+        toastLabel.backgroundColor = .green
+        toastLabel.textAlignment = .center
+        toastLabel.translatesAutoresizingMaskIntoConstraints = false
         
         // Add buttons to the view
-        view.addSubview(centerButton)
-        view.addSubview(topRightButton)
-        view.addSubview(bottomRightButton)
-        view.addSubview(bottomCenterButton)
+        view.addSubview(newScanBtn)
+        view.addSubview(startRecordBtn)
+        view.addSubview(finishRecordBtn)
+        view.addSubview(stopCameraBtn)
+        
+        // Add Label to the view
+        view.addSubview(statusLabel)
+        view.addSubview(toastLabel)
         
         // Apply constraints
         applyConstraints()
@@ -658,6 +813,17 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
             self.updateState(state: self.mState)
         }
     }
+    
+    // Auto-hide the home indicator to maximize immersion in AR experiences.
+    override var prefersHomeIndicatorAutoHidden: Bool {
+        return true
+    }
+    
+    // Hide the status bar to maximize immersion in AR experiences.
+    override var prefersStatusBarHidden: Bool {
+        return !mHudVisible
+    }
+    
     
     // MARK: Update Status and etc
     
@@ -740,6 +906,10 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
             self.view.setNeedsDisplay()
         }
         
+        if !self.isPaused {
+            self.view.setNeedsDisplay()
+        }
+        
     }
     
     // MARK: Guestures
@@ -752,7 +922,10 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     {
         super.touchesBegan(touches, with: event)
         
-        let touchList:Set<UITouch> = event?.allTouches ?? touches // fix a bug in swift ui
+        var touchList:Set<UITouch>  = touches
+        if event?.allTouches?.count == 2 {
+            touchList = event?.allTouches ?? touches // fix a bug in swift ui
+        }
         
         for touch in touchList {
             if (firstTouch == nil) {
@@ -774,8 +947,6 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
                         let normalizedX1 = pose1.x / self.view.bounds.size.width;
                         let normalizedY1 = pose1.y / self.view.bounds.size.height;
                         rtabmap?.onTouchEvent(touch_count: 2, event: 5, x0: Float(normalizedX0), y0: Float(normalizedY0), x1: Float(normalizedX1), y1: Float(normalizedY1));
-                        
-                        NSLog("\(normalizedX0)  --- \(normalizedY0) --- \(normalizedX1) --- \(normalizedY1)")
                     }
                 }
             }
@@ -791,7 +962,10 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         var firstTouchUsed = false
         var secondTouchUsed = false
         
-        let touchList:Set<UITouch> = event?.allTouches ?? touches // fix a bug in swift ui
+        var touchList:Set<UITouch>  = touches
+        if event?.allTouches?.count == 2 {
+            touchList = event?.allTouches ?? touches // fix a bug in swift ui
+        }
         
         for touch in touchList {
             if(touch == firstTouch)
@@ -834,11 +1008,13 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         }
     }
     
-    
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesEnded(touches, with: event)
         
-        let touchList:Set<UITouch> = event?.allTouches ?? touches // fix a bug in swift ui
+        var touchList:Set<UITouch>  = touches
+        if event?.allTouches?.count == 2 {
+            touchList = event?.allTouches ?? touches // fix a bug in swift ui
+        }
         
         for touch in touchList {
             if(touch == firstTouch)
@@ -862,6 +1038,9 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
             let normalizedY = pose.y / self.view.bounds.size.height;
             rtabmap?.onTouchEvent(touch_count: 1, event: 0, x0: Float(normalizedX), y0: Float(normalizedY), x1: 0.0, y1: 0.0);
         }
+        
+        firstTouch = nil
+        secondTouch = nil
         if self.isPaused {
             self.view.setNeedsDisplay()
         }
@@ -870,7 +1049,10 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesCancelled(touches, with: event)
         
-        let touchList:Set<UITouch> = event?.allTouches ?? touches // fix a bug in swift ui
+        var touchList:Set<UITouch>  = touches
+        if event?.allTouches?.count == 2 {
+            touchList = event?.allTouches ?? touches // fix a bug in swift ui
+        }
         
         for touch in touchList {
             if(touch == firstTouch)
@@ -917,6 +1099,597 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         }
     }
     
+    // MARK: Export and DB
+    
+    func exportMesh(isOBJ: Bool)
+    {
+        let ac = UIAlertController(title: "Maximum Polygons", message: "\n\n\n\n\n\n\n\n\n\n", preferredStyle: .alert)
+        ac.view.addSubview(maxPolygonsPickerView)
+        maxPolygonsPickerView.selectRow(2, inComponent: 0, animated: false)
+        ac.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+            let pickerValue = self.maxPolygonsPickerData[self.maxPolygonsPickerView.selectedRow(inComponent: 0)]
+            self.export(isOBJ: isOBJ, meshing: true, regenerateCloud: false, optimized: true, optimizedMaxPolygons: pickerValue*100000, previousState: self.mState);
+        }))
+        ac.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        present(ac, animated: true)
+    }
+    
+    func shareFile(_ fileUrl: URL) {
+        let fileURL = NSURL(fileURLWithPath: fileUrl.path)
+
+        // Create the Array which includes the files you want to share
+        var filesToShare = [Any]()
+
+        // Add the path of the file to the Array
+        filesToShare.append(fileURL)
+
+        // Make the activityViewContoller which shows the share-view
+        let activityViewController = UIActivityViewController(activityItems: filesToShare, applicationActivities: nil)
+        
+        if let popoverController = activityViewController.popoverPresentationController {
+            popoverController.sourceRect = CGRect(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height / 2, width: 0, height: 0)
+            popoverController.sourceView = self.view
+            popoverController.permittedArrowDirections = UIPopoverArrowDirection(rawValue: 0)
+        }
+
+        // Show the share-view
+        self.present(activityViewController, animated: true, completion: nil)
+    }
+    
+    func openDatabase(fileUrl: URL) {
+        
+        if(mState == .STATE_CAMERA) {
+            stopMapping(ignoreSaving: true)
+        }
+        
+        openedDatabasePath = fileUrl;
+        let fileName: String = self.openedDatabasePath!.lastPathComponent
+        
+        var progressDialog = UIAlertController(title: "Loading", message: String(format: "Loading \"%@\". Please wait while point clouds and/or meshes are created...", fileName), preferredStyle: .alert)
+        
+        //  Show it to your users
+        self.present(progressDialog, animated: true)
+
+        updateState(state: .STATE_PROCESSING);
+        var status = 0
+        DispatchQueue.background(background: {
+            status = self.rtabmap!.openDatabase(databasePath: self.openedDatabasePath!.path, databaseInMemory: true, optimize: false, clearDatabase: false)
+        }, completion:{
+            // main thread
+            if(status == -1) {
+                self.dismiss(animated: true)
+                self.showToast(message: "The map is loaded but optimization of the map's graph has failed, so the map cannot be shown. Change the Graph Optimizer approach used or enable/disable if the graph is optimized from graph end in \"Settings -> Mapping...\" and try opening again.", seconds: 4)
+            }
+            else if(status == -2) {
+                self.dismiss(animated: true)
+                self.showToast(message: "Failed to open database: Out of memory! Try again after lowering Point Cloud Density in Settings.", seconds: 4)
+            }
+            else {
+                if(status >= 1 && status<=3) {
+                    self.updateState(state: .STATE_VISUALIZING);
+                    self.resetNoTouchTimer(true);
+                }
+                else {
+                    self.setGLCamera(type: 2);
+                    self.updateState(state: .STATE_IDLE);
+                    self.dismiss(animated: true)
+                    self.showToast(message: "Database loaded!", seconds: 2)
+                }
+            }
+            
+        })
+    }
+    
+    func saveDatabase(fileName: String)
+    {
+        let filePath = self.getDocumentDirectory().appendingPathComponent(fileName).path
+        
+        let indicator: UIActivityIndicatorView = UIActivityIndicatorView(style: .large)
+        indicator.frame = CGRect(x: 0.0, y: 0.0, width: 60.0, height: 60.0)
+        indicator.center = view.center
+        view.addSubview(indicator)
+        indicator.bringSubviewToFront(view)
+        
+        indicator.startAnimating()
+        
+        let previousState = mState;
+        updateState(state: .STATE_PROCESSING);
+        
+        DispatchQueue.background(background: {
+            self.rtabmap?.save(databasePath: filePath); // save
+        }, completion:{
+            // main thread
+            indicator.stopAnimating()
+            indicator.removeFromSuperview()
+            
+            self.openedDatabasePath = URL(fileURLWithPath: filePath)
+            
+            let alert = UIAlertController(title: "Database saved!", message: String(format: "Database \"%@\" successfully saved!", fileName), preferredStyle: .alert)
+            let yes = UIAlertAction(title: "OK", style: .default) {
+                (UIAlertAction) -> Void in
+            }
+            alert.addAction(yes)
+            self.present(alert, animated: true, completion: nil)
+            do {
+                let tmpDatabase = self.getDocumentDirectory().appendingPathComponent(self.RTABMAP_TMP_DB)
+                try FileManager.default.removeItem(at: tmpDatabase)
+            }
+            catch {
+                print("Could not clear tmp database: \(error)")
+            }
+            self.updateDatabases()
+            self.updateState(state: previousState)
+        })
+    }
+    
+    private func export(isOBJ: Bool, meshing: Bool, regenerateCloud: Bool, optimized: Bool, optimizedMaxPolygons: Int, previousState: State)
+    {
+        let defaults = UserDefaults.standard
+        let cloudVoxelSize = defaults.float(forKey: "VoxelSize")
+        let textureSize = isOBJ ? defaults.integer(forKey: "TextureSize") : 0
+        let textureCount = defaults.integer(forKey: "MaximumOutputTextures")
+        let normalK = defaults.integer(forKey: "NormalK")
+        let maxTextureDistance = defaults.float(forKey: "MaxTextureDistance")
+        let minTextureClusterSize = defaults.integer(forKey: "MinTextureClusterSize")
+        let optimizedVoxelSize = cloudVoxelSize
+        let optimizedDepth = defaults.integer(forKey: "ReconstructionDepth")
+        let optimizedColorRadius = defaults.float(forKey: "ColorRadius")
+        let optimizedCleanWhitePolygons = defaults.bool(forKey: "CleanMesh")
+        let optimizedMinClusterSize = defaults.integer(forKey: "PolygonFiltering")
+        let blockRendering = false
+        
+        var indicator: UIActivityIndicatorView?
+        
+        let alertView = UIAlertController(title: "Assembling", message: "Please wait while assembling data...", preferredStyle: .alert)
+        alertView.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
+            self.dismiss(animated: true, completion: {
+                self.progressView = nil
+                
+                indicator = UIActivityIndicatorView(style: .large)
+                indicator?.frame = CGRect(x: 0.0, y: 0.0, width: 60.0, height: 60.0)
+                indicator?.center = self.view.center
+                self.view.addSubview(indicator!)
+                indicator?.bringSubviewToFront(self.view)
+                
+                indicator?.startAnimating()
+                
+                self.rtabmap!.cancelProcessing()
+            })
+            
+        }))
+
+        updateState(state: .STATE_PROCESSING);
+        
+        present(alertView, animated: true, completion: {
+            //  Add your progressbar after alert is shown (and measured)
+            let margin:CGFloat = 8.0
+            let rect = CGRect(x: margin, y: 84.0, width: alertView.view.frame.width - margin * 2.0 , height: 2.0)
+            self.progressView = UIProgressView(frame: rect)
+            self.progressView!.progress = 0
+            self.progressView!.tintColor = self.view.tintColor
+            alertView.view.addSubview(self.progressView!)
+            
+            var success : Bool = false
+            DispatchQueue.background(background: {
+                
+                success = self.rtabmap!.exportMesh(
+                    cloudVoxelSize: cloudVoxelSize,
+                    regenerateCloud: regenerateCloud,
+                    meshing: meshing,
+                    textureSize: textureSize,
+                    textureCount: textureCount,
+                    normalK: normalK,
+                    optimized: optimized,
+                    optimizedVoxelSize: optimizedVoxelSize,
+                    optimizedDepth: optimizedDepth,
+                    optimizedMaxPolygons: optimizedMaxPolygons,
+                    optimizedColorRadius: optimizedColorRadius,
+                    optimizedCleanWhitePolygons: optimizedCleanWhitePolygons,
+                    optimizedMinClusterSize: optimizedMinClusterSize,
+                    optimizedMaxTextureDistance: maxTextureDistance,
+                    optimizedMinTextureClusterSize: minTextureClusterSize,
+                    blockRendering: blockRendering)
+                
+            }, completion:{
+                if(indicator != nil)
+                {
+                    indicator!.stopAnimating()
+                    indicator!.removeFromSuperview()
+                }
+                if self.progressView != nil
+                {
+                    self.dismiss(animated: self.openedDatabasePath == nil, completion: {
+                        if(success)
+                        {
+                            if(!meshing && cloudVoxelSize>0.0)
+                            {
+                                self.showToast(message: "Cloud assembled and voxelized at \(cloudVoxelSize) m.", seconds: 2)
+                            }
+                            
+                            if(!meshing)
+                            {
+                                self.setMeshRendering(viewMode: 0)
+                            }
+                            else if(!isOBJ)
+                            {
+                                self.setMeshRendering(viewMode: 1)
+                            }
+                            else // isOBJ
+                            {
+                                self.setMeshRendering(viewMode: 2)
+                            }
+
+                            self.updateState(state: .STATE_VISUALIZING)
+                            
+                            self.rtabmap!.postExportation(visualize: true)
+
+                            self.setGLCamera(type: 2)
+
+                            if self.openedDatabasePath == nil
+                            {
+                                self.save();
+                            }
+                        }
+                        else
+                        {
+                            self.updateState(state: previousState);
+                            self.showToast(message: "Exporting map failed!", seconds: 4)
+                        }
+                    })
+                }
+                else
+                {
+                    self.showToast(message: "Export canceled", seconds: 2)
+                    self.updateState(state: previousState);
+                }
+            })
+        })
+    }
+    
+    private func optimization(withStandardMeshExport: Bool = false, approach: Int)
+    {
+        if(mState == State.STATE_VISUALIZING)
+        {
+            closeVisualization()
+            rtabmap!.postExportation(visualize: false)
+        }
+        
+        let alertView = UIAlertController(title: "Post-Processing", message: "Please wait while optimizing...", preferredStyle: .alert)
+        alertView.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
+            self.dismiss(animated: true)
+            self.progressView = nil
+            self.rtabmap!.cancelProcessing()
+        }))
+
+        let previousState = mState
+        
+        updateState(state: .STATE_PROCESSING)
+        
+        //  Show it to your users
+        present(alertView, animated: true, completion: {
+            //  Add your progressbar after alert is shown (and measured)
+            let margin:CGFloat = 8.0
+            let rect = CGRect(x: margin, y: 72.0, width: alertView.view.frame.width - margin * 2.0 , height: 2.0)
+            self.progressView = UIProgressView(frame: rect)
+            self.progressView!.progress = 0
+            self.progressView!.tintColor = self.view.tintColor
+            alertView.view.addSubview(self.progressView!)
+            
+            var loopDetected : Int = -1
+            DispatchQueue.background(background: {
+                loopDetected = self.rtabmap!.postProcessing(approach: approach);
+            }, completion:{
+                // main thread
+                if self.progressView != nil
+                {
+                    self.dismiss(animated: self.openedDatabasePath == nil, completion: {
+                        self.progressView = nil
+                        
+                        if(loopDetected >= 0)
+                        {
+                            if(approach  == -1)
+                            {
+                                if(withStandardMeshExport)
+                                {
+                                    self.export(isOBJ: true, meshing: true, regenerateCloud: false, optimized: true, optimizedMaxPolygons: 200000, previousState: previousState);
+                                }
+                                else
+                                {
+                                    if self.openedDatabasePath == nil
+                                    {
+                                        self.save();
+                                    }
+                                }
+                            }
+                        }
+                        else if(loopDetected < 0)
+                        {
+                            self.showToast(message: "Optimization failed!", seconds: 4.0)
+                        }
+                    })
+                }
+                else
+                {
+                    self.showToast(message: "Optimization canceled", seconds: 4.0)
+                }
+                self.updateState(state: .STATE_IDLE);
+            })
+        })
+    }
+    
+    func updateDatabases()
+    {
+        databases.removeAll()
+        do {
+            let fileURLs = try FileManager.default.contentsOfDirectory(at: getDocumentDirectory(), includingPropertiesForKeys: nil)
+            // if you want to filter the directory contents you can do like this:
+            
+            let data = fileURLs.map { url in
+                        (url, (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate ?? Date.distantPast)
+                    }
+                    .sorted(by: { $0.1 > $1.1 }) // sort descending modification dates
+                    .map { $0.0 } // extract file names
+            databases = data.filter{ $0.pathExtension == "db" && $0.lastPathComponent != RTABMAP_TMP_DB && $0.lastPathComponent != RTABMAP_RECOVERY_DB }
+            
+        } catch {
+            print("Error while enumerating files : \(error.localizedDescription)")
+            return
+        }
+    }
+    
+    func rename(fileURL: URL)
+    {
+        //Step : 1
+        let alert = UIAlertController(title: "Rename Scan", message: "RTAB-Map Database Name (*.db):", preferredStyle: .alert )
+        //Step : 2
+        let rename = UIAlertAction(title: "Rename", style: .default) { (alertAction) in
+            let textField = alert.textFields![0] as UITextField
+            if textField.text != "" {
+                //Read TextFields text data
+                let fileName = textField.text!+".db"
+                let filePath = self.getDocumentDirectory().appendingPathComponent(fileName).path
+                if FileManager.default.fileExists(atPath: filePath) {
+                    let alert = UIAlertController(title: "File Already Exists", message: "Do you want to overwrite the existing file?", preferredStyle: .alert)
+                    let yes = UIAlertAction(title: "Yes", style: .default) {
+                        (UIAlertAction) -> Void in
+                        
+                        do {
+                            try FileManager.default.moveItem(at: fileURL, to: URL(fileURLWithPath: filePath))
+                            print("File \(fileURL) renamed to \(filePath)")
+                        }
+                        catch {
+                            print("Error renaming file \(fileURL) to \(filePath)")
+                        }
+                        self.openLibrary()
+                    }
+                    alert.addAction(yes)
+                    let no = UIAlertAction(title: "No", style: .cancel) {
+                        (UIAlertAction) -> Void in
+                    }
+                    alert.addAction(no)
+                    
+                    self.present(alert, animated: true, completion: nil)
+                } else {
+                    do {
+                        try FileManager.default.moveItem(at: fileURL, to: URL(fileURLWithPath: filePath))
+                        print("File \(fileURL) renamed to \(filePath)")
+                    }
+                    catch {
+                        print("Error renaming file \(fileURL) to \(filePath)")
+                    }
+                    self.openLibrary()
+                }
+            }
+        }
+
+        //Step : 3
+        alert.addTextField { (textField) in
+            var components = fileURL.lastPathComponent.components(separatedBy: ".")
+            if components.count > 1 { // If there is a file extension
+              components.removeLast()
+                textField.text = components.joined(separator: ".")
+            } else {
+                textField.text = fileURL.lastPathComponent
+            }
+        }
+
+        //Step : 4
+        alert.addAction(rename)
+        //Cancel action
+        alert.addAction(UIAlertAction(title: "Cancel", style: .default) { (alertAction) in })
+
+        self.present(alert, animated: true) {
+            alert.textFields?.first?.selectAll(nil)
+        }
+    }
+    
+    func exportOBJPLY()
+    {
+        //Step : 1
+        let alert = UIAlertController(title: "Export Scan", message: "Model Name:", preferredStyle: .alert )
+        //Step : 2
+        let save = UIAlertAction(title: "Ok", style: .default) { (alertAction) in
+            let textField = alert.textFields![0] as UITextField
+            if textField.text != "" {
+                self.dismiss(animated: true)
+                //Read TextFields text data
+                let fileName = textField.text!+".zip"
+                let filePath = self.getDocumentDirectory().appendingPathComponent(fileName).path
+                if FileManager.default.fileExists(atPath: filePath) {
+                    let alert = UIAlertController(title: "File Already Exists", message: "Do you want to overwrite the existing file?", preferredStyle: .alert)
+                    let yes = UIAlertAction(title: "Yes", style: .default) {
+                        (UIAlertAction) -> Void in
+                        self.writeExportedFiles(fileName: textField.text!);
+                    }
+                    alert.addAction(yes)
+                    let no = UIAlertAction(title: "No", style: .cancel) {
+                        (UIAlertAction) -> Void in
+                    }
+                    alert.addAction(no)
+                    
+                    self.present(alert, animated: true, completion: nil)
+                } else {
+                    self.writeExportedFiles(fileName: textField.text!);
+                }
+            }
+        }
+
+        //Step : 3
+        alert.addTextField { (textField) in
+            if self.openedDatabasePath != nil && !self.openedDatabasePath!.path.isEmpty
+            {
+                var components = self.openedDatabasePath!.lastPathComponent.components(separatedBy: ".")
+                if components.count > 1 { // If there is a file extension
+                    components.removeLast()
+                    textField.text = components.joined(separator: ".")
+                } else {
+                    textField.text = self.openedDatabasePath!.lastPathComponent
+                }
+            }
+            else {
+                textField.text = Date().getFormattedDate(format: "yyMMdd-HHmmss")
+            }
+        }
+
+        //Step : 4
+        alert.addAction(save)
+        //Cancel action
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { (alertAction) in })
+
+        self.present(alert, animated: true) {
+            alert.textFields?.first?.selectAll(nil)
+        }
+    }
+
+    func writeExportedFiles(fileName: String)
+    {
+        let alertView = UIAlertController(title: "Exporting", message: "Please wait while zipping data to \(fileName+".zip")...", preferredStyle: .alert)
+        alertView.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
+            self.dismiss(animated: true)
+            self.progressView = nil
+            self.rtabmap!.cancelProcessing()
+        }))
+        
+        let previousState = mState;
+
+        updateState(state: .STATE_PROCESSING);
+        
+        present(alertView, animated: true, completion: {
+            //  Add your progressbar after alert is shown (and measured)
+            let margin:CGFloat = 8.0
+            let rect = CGRect(x: margin, y: 84.0, width: alertView.view.frame.width - margin * 2.0 , height: 2.0)
+            self.progressView = UIProgressView(frame: rect)
+            self.progressView!.progress = 0
+            self.progressView!.tintColor = self.view.tintColor
+            alertView.view.addSubview(self.progressView!)
+            
+            let exportDir = self.getTmpDirectory().appendingPathComponent(self.RTABMAP_EXPORT_DIR)
+           
+            do {
+                try FileManager.default.removeItem(at: exportDir)
+            }
+            catch
+            {}
+            
+            do {
+                try FileManager.default.createDirectory(at: exportDir, withIntermediateDirectories: true)
+            }
+            catch
+            {
+                print("Failed adding export directory \(exportDir)")
+                return
+            }
+            
+            var success : Bool = false
+            var zipFileUrl : URL!
+            DispatchQueue.background(background: {
+                print("Exporting to directory \(exportDir.path) with name \(fileName)")
+                if(self.rtabmap!.writeExportedMesh(directory: exportDir.path, name: fileName))
+                {
+                    do {
+                        let fileURLs = try FileManager.default.contentsOfDirectory(at: exportDir, includingPropertiesForKeys: nil)
+                        if(!fileURLs.isEmpty)
+                        {
+                            do {
+                                zipFileUrl = try Zip.quickZipFiles(fileURLs, fileName: fileName) // Zip
+                                print("Zip file \(zipFileUrl.path) created (size=\(zipFileUrl.fileSizeString)")
+                                success = true
+                            }
+                            catch {
+                              print("Something went wrong while zipping")
+                            }
+                        }
+                    } catch {
+                        print("No files exported to \(exportDir)")
+                        return
+                    }
+                }
+                
+            }, completion:{
+                if self.progressView != nil
+                {
+                    self.dismiss(animated: true)
+                }
+                if(success)
+                {
+                    let alertShare = UIAlertController(title: "Mesh/Cloud Saved!", message: "\(fileName+".zip") (\(zipFileUrl.fileSizeString) successfully exported in Documents of RTAB-Map! Share it?", preferredStyle: .alert)
+                    let alertActionYes = UIAlertAction(title: "Yes", style: .default) {
+                        (UIAlertAction) -> Void in
+                        self.shareFile(zipFileUrl)
+                    }
+                    alertShare.addAction(alertActionYes)
+                    let alertActionNo = UIAlertAction(title: "No", style: .cancel) {
+                        (UIAlertAction) -> Void in
+                       
+                    }
+                    alertShare.addAction(alertActionNo)
+                    
+                    self.present(alertShare, animated: true, completion: nil)
+                }
+                else
+                {
+                    self.showToast(message: "Exporting mesh/cloud canceled!", seconds: 2)
+                }
+                self.updateState(state: previousState);
+            })
+        })
+    }
+    
+    func openLibrary()
+    {
+        updateDatabases();
+        
+        if databases.isEmpty {
+            return
+        }
+        
+        let alertController = UIAlertController(title: "Library", message: nil, preferredStyle: .alert)
+//        let customView = VerticalScrollerView()
+//        customView.dataSource = self
+//        customView.delegate = self
+//        customView.reload()
+//        alertController.view.addSubview(customView)
+//        customView.translatesAutoresizingMaskIntoConstraints = false
+//        customView.topAnchor.constraint(equalTo: alertController.view.topAnchor, constant: 60).isActive = true
+//        customView.rightAnchor.constraint(equalTo: alertController.view.rightAnchor, constant: -10).isActive = true
+//        customView.leftAnchor.constraint(equalTo: alertController.view.leftAnchor, constant: 10).isActive = true
+//        customView.bottomAnchor.constraint(equalTo: alertController.view.bottomAnchor, constant: -45).isActive = true
+//        
+        alertController.view.translatesAutoresizingMaskIntoConstraints = false
+        alertController.view.heightAnchor.constraint(equalToConstant: 600).isActive = true
+        alertController.view.widthAnchor.constraint(equalToConstant: 400).isActive = true
+//
+//        customView.backgroundColor = .darkGray
+
+        let selectAction = UIAlertAction(title: "Select", style: .default) { (action) in
+            self.openDatabase(fileUrl: self.databases[self.currentDatabaseIndex])
+        }
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        alertController.addAction(selectAction)
+        alertController.addAction(cancelAction)
+        self.present(alertController, animated: true, completion: nil)
+    }
     
     // MARK: RTABMap Settings
     func updateDisplayFromDefaults()
@@ -1187,6 +1960,30 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
         //
         return 0
+    }
+    
+    // MARK: Link UIButton to Action
+    
+    @objc func newScanAction () {
+        newScan()
+    }
+    
+    @objc func stopCameraAction() {
+        appMovedToBackground()
+    }
+    
+    @objc func startRecordAction () {
+        rtabmap?.setPausedMapping(paused: false);
+        updateState(state: .STATE_MAPPING)
+    }
+    
+    @objc func finishRecordAction () {
+        stopMapping(ignoreSaving: false)
+    }
+    
+    @objc func closeVisualAction () {
+        closeVisualization()
+        rtabmap!.postExportation(visualize: false)
     }
 }
 
