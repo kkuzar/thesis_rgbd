@@ -18,6 +18,7 @@
 		DE0C56A62BCCBB4600D54FEC /* FirebaseInstallations in Frameworks */ = {isa = PBXBuildFile; productRef = DE0C56A52BCCBB4600D54FEC /* FirebaseInstallations */; };
 		DE0C56B22BCCBB4A00D54FEC /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = DE0C56B12BCCBB4A00D54FEC /* FirebaseStorage */; };
 		DE0C56B42BCCBB4B00D54FEC /* FirebaseStorageCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = DE0C56B32BCCBB4B00D54FEC /* FirebaseStorageCombine-Community */; };
+		DE0C56B62BCCBD4800D54FEC /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = DE0C56B52BCCBD4700D54FEC /* .gitignore */; };
 		DE0C8D3F2BC9D0200085B038 /* RgbdSlamApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0C8D3E2BC9D0200085B038 /* RgbdSlamApp.swift */; };
 		DE0C8D412BC9D0200085B038 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0C8D402BC9D0200085B038 /* ContentView.swift */; };
 		DE0C8D432BC9D0200085B038 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0C8D422BC9D0200085B038 /* Item.swift */; };
@@ -193,6 +194,8 @@
 		DE0C565F2BCC419400D54FEC /* RgbdCaptureExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RgbdCaptureExtensions.swift; sourceTree = "<group>"; };
 		DE0C566C2BCC8D0F00D54FEC /* SettingAWSView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingAWSView.swift; sourceTree = "<group>"; };
 		DE0C567C2BCCB8C700D54FEC /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../GoogleService-Info.plist"; sourceTree = "<group>"; };
+		DE0C56B52BCCBD4700D54FEC /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = .gitignore; path = ../.gitignore; sourceTree = "<group>"; };
+		DE0C56BF2BCD10D000D54FEC /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		DE0C8D3B2BC9D0200085B038 /* RgbdSlam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RgbdSlam.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DE0C8D3E2BC9D0200085B038 /* RgbdSlamApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RgbdSlamApp.swift; sourceTree = "<group>"; };
 		DE0C8D402BC9D0200085B038 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -576,6 +579,7 @@
 		DE0C8D462BC9D0220085B038 /* Preview Content */ = {
 			isa = PBXGroup;
 			children = (
+				DE0C56BF2BCD10D000D54FEC /* ViewController.swift */,
 				DE0C8D472BC9D0220085B038 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
@@ -775,6 +779,7 @@
 		DEEEA8EB2BCA88BC0001E09D /* Scripts */ = {
 			isa = PBXGroup;
 			children = (
+				DE0C56B52BCCBD4700D54FEC /* .gitignore */,
 				DEEEA8EC2BCA88CF0001E09D /* install_deps.sh */,
 			);
 			name = Scripts;
@@ -907,6 +912,7 @@
 				DEEEA8ED2BCA88CF0001E09D /* install_deps.sh in Resources */,
 				DE0C8DBF2BC9E2980085B038 /* include in Resources */,
 				DEFC70122BCB163D00CDB669 /* Root.plist in Resources */,
+				DE0C56B62BCCBD4800D54FEC /* .gitignore in Resources */,
 				DEFC70112BCB163D00CDB669 /* Mapping.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

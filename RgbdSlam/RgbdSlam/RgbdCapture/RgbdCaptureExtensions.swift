@@ -6,24 +6,38 @@
 //
 
 import Foundation
-import UIKit
+import StoreKit
 
-extension RGBDCaptureViewController {
-//    @IBAction func doubleTapped(_ gestureRecognizer: UITapGestureRecognizer) {
-//        if gestureRecognizer.state == UIGestureRecognizer.State.recognized
-//        {
-//            let pose = gestureRecognizer.location(in: gestureRecognizer.view)
-//            let normalizedX = pose.x / self.view.bounds.size.width;
-//            let normalizedY = pose.y / self.view.bounds.size.height;
-//            self.rtabmap?.onTouchEvent(touch_count: 3, event: 0, x0: Float(normalizedX), y0: Float(normalizedY), x1: 0.0, y1: 0.0);
-//        
-//            
-//            if self.isPaused {
-//                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-//                    self.view.setNeedsDisplay()
-//                }
-//            }
-//        }
-//    }
+//enum State {
+//    case STATE_WELCOME,    // Camera/Motion off - showing only buttons open and start new scan
+//         STATE_CAMERA,          // Camera/Motion on - not mapping
+//         STATE_MAPPING,         // Camera/Motion on - mapping
+//         STATE_IDLE,            // Camera/Motion off
+//         STATE_PROCESSING,      // Camera/Motion off - post processing
+//         STATE_VISUALIZING,     // Camera/Motion off - Showing optimized mesh
+//         STATE_VISUALIZING_CAMERA,     // Camera/Motion on  - Showing optimized mesh
+//         STATE_VISUALIZING_WHILE_LOADING // Camera/Motion off - Loading data while showing optimized mesh
+//}
+
+extension SKStoreReviewController {
+    public static func requestReviewInCurrentScene() {
+        if let scene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene {
+            requestReview(in: scene)
+        }
+    }
+}
+
+extension DispatchQueue {
+
+    static func background(delay: Double = 0.0, background: (()->Void)? = nil, completion: (() -> Void)? = nil) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            background?()
+            if let completion = completion {
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: {
+                    completion()
+                })
+            }
+        }
+    }
 }
 

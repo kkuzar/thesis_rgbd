@@ -44,8 +44,8 @@ class SettingAwsDataModel: ObservableObject {
     
     func debug() {
         
-        var id = keychain.get("s3AppID") ?? ""
-        var key = keychain.get("s3AppKey") ?? ""
+        let id = keychain.get("s3AppID") ?? ""
+        let key = keychain.get("s3AppKey") ?? ""
         
         NSLog("\(id)")
         NSLog("\(key)")

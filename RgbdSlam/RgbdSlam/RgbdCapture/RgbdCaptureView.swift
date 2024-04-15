@@ -11,20 +11,13 @@ struct RgbdCaptureView: View {
     
     // MARK: View body
     var body: some View {
-        VStack {
-            RGBDCaptureViewControllerWrapper()
-            Button(action: testAction) {
-                Label("Add Item", systemImage: "plus")
-            }
-        }.navigationBarBackButtonHidden(true)
+        RGBDCaptureViewControllerWrapper()
+            .edgesIgnoringSafeArea(.all)
+            .highPriorityGesture(TapGesture().onEnded { _ in
+                // This is just to show where you might configure SwiftUI to ignore gestures.
+                // This might not be necessary if your UIKit handles gestures properly.
+            })
     }
-  
-    // MARK: Functions
-    
-    private func testAction() {
-        NSLog("Swift UI action btn")
-    }
-
 }
 
 

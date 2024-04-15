@@ -266,7 +266,7 @@
 		</dict>
 		<dict>
 			<key>DefaultValue</key>
-			<real>0.20000000000000001</real>
+			<real>0.70000000000000001</real>
 			<key>Key</key>
 			<string>BackgroundColor</string>
 			<key>Title</key>
