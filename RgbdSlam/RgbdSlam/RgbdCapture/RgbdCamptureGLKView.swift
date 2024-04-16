@@ -713,13 +713,13 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         
         // Constraints for upper status label
         NSLayoutConstraint.activate([
-            statusLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            statusLabel.bottomAnchor.constraint(equalTo: stopCameraBtn.topAnchor, constant: -20)
+            toastLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            toastLabel.bottomAnchor.constraint(equalTo: stopCameraBtn.topAnchor, constant: -20)
         ])
         
         NSLayoutConstraint.activate([
-            toastLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            toastLabel.bottomAnchor.constraint(equalTo: view.topAnchor)
+            statusLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            statusLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -350)
         ])
     }
     
@@ -743,6 +743,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        self.toastLabel.isHidden = true
         depthSupported = ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth)
         
         rtabmap = RTABMap()
@@ -781,6 +782,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         statusLabel.textAlignment = .center
         statusLabel.backgroundColor = .red
         statusLabel.translatesAutoresizingMaskIntoConstraints = false
+        
         toastLabel.backgroundColor = .green
         toastLabel.textAlignment = .left
         toastLabel.translatesAutoresizingMaskIntoConstraints = false
