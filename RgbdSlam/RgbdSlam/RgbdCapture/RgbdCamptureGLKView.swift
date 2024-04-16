@@ -44,6 +44,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     private var context: EAGLContext?
     private var rtabmap: RTABMap?
     
+    private var trackMaskView = GLKView()
     private var databases = [URL]()
     private var currentDatabaseIndex: Int = 0
     private var openedDatabasePath: URL?
@@ -306,7 +307,6 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     
     // This is called when a session fails.
     func session(_ session: ARSession, didFailWithError error: Error) {
-        NSLog("AR sessions error")
         // Present an error message to the user.
         guard error is ARError else { return }
         let errorWithInfo = error as NSError
@@ -714,12 +714,12 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         // Constraints for upper status label
         NSLayoutConstraint.activate([
             statusLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            statusLabel.bottomAnchor.constraint(equalTo: newScanBtn.topAnchor, constant: -20)
+            statusLabel.bottomAnchor.constraint(equalTo: stopCameraBtn.topAnchor, constant: -20)
         ])
         
         NSLayoutConstraint.activate([
             toastLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            toastLabel.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -40)
+            toastLabel.bottomAnchor.constraint(equalTo: view.topAnchor)
         ])
     }
     
@@ -778,11 +778,11 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         startRecordBtn.tintColor = .systemRed
         startRecordBtn.addTarget(self, action: #selector(startRecordAction), for: .touchUpInside)
         
-        statusLabel.textAlignment = .left
+        statusLabel.textAlignment = .center
         statusLabel.backgroundColor = .red
         statusLabel.translatesAutoresizingMaskIntoConstraints = false
         toastLabel.backgroundColor = .green
-        toastLabel.textAlignment = .center
+        toastLabel.textAlignment = .left
         toastLabel.translatesAutoresizingMaskIntoConstraints = false
         
         // Add buttons to the view
@@ -840,6 +840,9 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
             // Make sure the button stays on top after layout changes
             view.bringSubviewToFront(startRecordBtn)
             view.bringSubviewToFront(finishRecordBtn)
+            view.bringSubviewToFront(stopCameraBtn)
+            view.bringSubviewToFront(statusLabel)
+            view.bringSubviewToFront(toastLabel)
     }
     
     
@@ -1780,9 +1783,9 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         let bgColor = defaults.float(forKey: "BackgroundColor");
         rtabmap!.setBackgroundColor(gray: bgColor);
         
-        //        DispatchQueue.main.async {
-        //            self.statusLabel.textColor = bgColor>=0.6 ? UIColor(white: 0.0, alpha: 1) : UIColor(white: 1.0, alpha: 1)
-        //        }
+        DispatchQueue.main.async {
+              self.statusLabel.textColor = bgColor>=0.6 ? UIColor(white: 0.0, alpha: 1) : UIColor(white: 1.0, alpha: 1)
+        }
         
         rtabmap!.setClusterRatio(value: defaults.float(forKey: "NoiseFilteringRatio"));
         rtabmap!.setMaxGainRadius(value: defaults.float(forKey: "ColorCorrectionRadius"));
@@ -1849,9 +1852,9 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
             }
             
             let usedMem = self.getMemoryUsage()
-            //            self.statusLabel.text =
-            //                "Status: " + (status == 1 && msg.isEmpty ? self.mState == State.STATE_CAMERA ? "Camera Preview" : "Idle" : msg) + "\n" +
-            //                "Memory Usage: \(usedMem) MB"
+                        self.statusLabel.text =
+                            "Status: " + (status == 1 && msg.isEmpty ? self.mState == State.STATE_CAMERA ? "Camera Preview" : "Idle" : msg) + "\n" +
+                            "Memory Usage: \(usedMem) MB"
         }
     }
     
@@ -1865,7 +1868,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         let previousNodes = mMapNodes
         mMapNodes = nodes;
         
-        //        let formattedDate = Date().getFormattedDate(format: "HH:mm:ss.SSS")
+        let formattedDate = Date().getFormattedDate(format: "HH:mm:ss.SSS")
         
         DispatchQueue.main.async {
             
@@ -1874,16 +1877,16 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
                 self.updateState(state: self.mState) // refesh menus and actions
             }
             
-            //            self.statusLabel.text = ""
-            //            if self.statusShown {
-            //                self.statusLabel.text =
-            //                self.statusLabel.text! +
-            //                "Status: \(self.getStateString(state: self.mState))\n" +
-            //                "Memory Usage : \(usedMem) MB"
-            //            }
+                        self.statusLabel.text = ""
+                        if self.statusShown {
+                            self.statusLabel.text =
+                            self.statusLabel.text! +
+                            "Status: \(self.getStateString(state: self.mState))\n" +
+                            "Memory Usage : \(usedMem) MB"
+                        }
             if self.debugShown {
-                //                self.statusLabel.text =
-                //                self.statusLabel.text! + "\n"
+                                self.statusLabel.text =
+                                self.statusLabel.text! + "\n"
                 var gpsString = "\n"
                 if(UserDefaults.standard.bool(forKey: "SaveGPS"))
                 {
@@ -1914,25 +1917,25 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
                     lightString = String("Light (lm): \(Int(self.mLastLightEstimate!))\n")
                 }
                 
-                //                self.statusLabel.text =
-                //                self.statusLabel.text! +
-                //                gpsString + //gps
-                //                lightString + //env sensors
-                ////                "Time: \(formattedDate)\n" +
-                //                "Nodes (WM): \(nodes) (\(nodesDrawn) shown)\n" +
-                //                "Words: \(words)\n" +
-                //                "Database (MB): \(databaseMemoryUsed)\n" +
-                //                "Number of points: \(points)\n" +
-                //                "Polygons: \(polygons)\n" +
-                //                "Update time (ms): \(Int(updateTime)) / \(self.mTimeThr==0 ? "No Limit" : String(self.mTimeThr))\n" +
-                //                "Features: \(featuresExtracted) / \(self.mMaxFeatures==0 ? "No Limit" : (self.mMaxFeatures == -1 ? "Disabled" : String(self.mMaxFeatures)))\n" +
-                //                "Rehearsal (%): \(Int(rehearsalValue*100))\n" +
-                //                "Loop closures: \(self.mTotalLoopClosures)\n" +
-                //                "Inliers: \(inliers)\n" +
-                //                "Hypothesis (%): \(Int(hypothesis*100)) / \(Int(self.mLoopThr*100)) (\(loopClosureId>0 ? loopClosureId : highestHypId))\n" +
-                //                String(format: "FPS (rendering): %.1f Hz\n", fps) +
-                //                String(format: "Travelled distance: %.2f m\n", distanceTravelled) +
-                //                String(format: "Pose (x,y,z): %.2f %.2f %.2f", x, y, z)
+                                self.statusLabel.text =
+                                self.statusLabel.text! +
+                                gpsString + //gps
+                                lightString + //env sensors
+                //                "Time: \(formattedDate)\n" +
+                                "Nodes (WM): \(nodes) (\(nodesDrawn) shown)\n" +
+                                "Words: \(words)\n" +
+                                "Database (MB): \(databaseMemoryUsed)\n" +
+                                "Number of points: \(points)\n" +
+                                "Polygons: \(polygons)\n" +
+                                "Update time (ms): \(Int(updateTime)) / \(self.mTimeThr==0 ? "No Limit" : String(self.mTimeThr))\n" +
+                                "Features: \(featuresExtracted) / \(self.mMaxFeatures==0 ? "No Limit" : (self.mMaxFeatures == -1 ? "Disabled" : String(self.mMaxFeatures)))\n" +
+                                "Rehearsal (%): \(Int(rehearsalValue*100))\n" +
+                                "Loop closures: \(self.mTotalLoopClosures)\n" +
+                                "Inliers: \(inliers)\n" +
+                                "Hypothesis (%): \(Int(hypothesis*100)) / \(Int(self.mLoopThr*100)) (\(loopClosureId>0 ? loopClosureId : highestHypId))\n" +
+                                String(format: "FPS (rendering): %.1f Hz\n", fps) +
+                                String(format: "Travelled distance: %.2f m\n", distanceTravelled) +
+                                String(format: "Pose (x,y,z): %.2f %.2f %.2f", x, y, z)
             }
             if(self.mState == .STATE_MAPPING || self.mState == .STATE_VISUALIZING_CAMERA)
             {
@@ -1992,6 +1995,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     
     @objc func startRecordAction () {
         rtabmap?.setPausedMapping(paused: false);
+        arView.alpha = 0.35
         updateState(state: .STATE_MAPPING)
     }
     
