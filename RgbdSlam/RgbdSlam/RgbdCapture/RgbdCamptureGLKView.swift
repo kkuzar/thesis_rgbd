@@ -22,7 +22,7 @@ struct RGBDCaptureViewControllerWrapper: UIViewControllerRepresentable {
     }
 }
 
-class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIPickerViewDataSource, UIPickerViewDelegate, CLLocationManagerDelegate {
+class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapObserver {
     
     enum State {
         case STATE_WELCOME,    // Camera/Motion off - showing only buttons open and start new scan
@@ -35,8 +35,8 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
              STATE_VISUALIZING_WHILE_LOADING // Camera/Motion off - Loading data while showing optimized mesh
     }
     
-    
-    private let session = ARSession()
+    private let arView = ARSCNView()
+//    private let session = ARSession()
     private var locationManager: CLLocationManager?
     private var mLastKnownLocation: CLLocation?
     private var mLastLightEstimate: CGFloat?
@@ -133,6 +133,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         {
             return;
         }
+        NSLog("Toast Message --- [\(message)]")
         self.toastLabel.text = message
         self.toastLabel.isHidden = false
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + seconds) {
@@ -301,8 +302,11 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         }
     }
     
+   
+    
     // This is called when a session fails.
     func session(_ session: ARSession, didFailWithError error: Error) {
+        NSLog("AR sessions error")
         // Present an error message to the user.
         guard error is ARError else { return }
         let errorWithInfo = error as NSError
@@ -312,13 +316,14 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
             errorWithInfo.localizedRecoverySuggestion
         ]
         let errorMessage = messages.compactMap({ $0 }).joined(separator: "\n")
+
         DispatchQueue.main.async {
             // Present an alert informing about the error that has occurred.
             let alertController = UIAlertController(title: "The AR session failed.", message: errorMessage, preferredStyle: .alert)
             let restartAction = UIAlertAction(title: "Restart Session", style: .default) { _ in
                 alertController.dismiss(animated: true, completion: nil)
-                if let configuration = self.session.configuration {
-                    self.session.run(configuration, options: [.resetSceneReconstruction, .resetTracking, .removeExistingAnchors])
+                if let configuration = self.arView.session.configuration {
+                    self.arView.session.run(configuration, options: [.resetSceneReconstruction, .resetTracking, .removeExistingAnchors])
                 }
             }
             alertController.addAction(restartAction)
@@ -337,7 +342,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized: // The user has previously granted access to the camera.
-            print("Start Camera")
+            print("Start Camera Function ...")
             rtabmap!.startCamera()
             let configuration = ARWorldTrackingConfiguration()
             var message = ""
@@ -356,13 +361,15 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
                 configuration.frameSemantics = .sceneDepth
             }
             
-            session.run(configuration, options: [.resetSceneReconstruction, .resetTracking, .removeExistingAnchors])
+            self.arView.frame = self.view.bounds
+            self.view.addSubview(arView)
+            arView.session.run(configuration, options: [.resetSceneReconstruction, .resetTracking, .removeExistingAnchors])
             
             switch mState {
             case .STATE_VISUALIZING:
                 updateState(state: .STATE_VISUALIZING_CAMERA)
             default:
-                locationManager?.startUpdatingLocation()
+                // locationManager?.startUpdatingLocation()
                 updateState(state: .STATE_CAMERA)
             }
             
@@ -619,8 +626,9 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     
     func stopMapping(ignoreSaving: Bool)
     {
-        session.pause()
-        locationManager?.stopUpdatingLocation()
+        arView.session.pause()
+        arView.removeFromSuperview()
+//        locationManager?.stopUpdatingLocation()
         rtabmap?.setPausedMapping(paused: true)
         rtabmap?.stopCamera()
         setGLCamera(type: 2)
@@ -749,6 +757,9 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
             rtabmap?.initGlContent()
         }
         
+        arView.frame = self.view.bounds
+        arView.session.delegate = self
+        
         // Setup buttons
         setupButton(newScanBtn, title: "Start the Camera", iconName: "camera.circle")
         setupButton(startRecordBtn, title: "", iconName: "record.circle")
@@ -800,14 +811,14 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         registerSettingsBundle()
         updateDisplayFromDefaults()
         
-        maxPolygonsPickerView = UIPickerView(frame: CGRect(x: 10, y: 50, width: 250, height: 150))
-        maxPolygonsPickerView.delegate = self
-        maxPolygonsPickerView.dataSource = self
+//        maxPolygonsPickerView = UIPickerView(frame: CGRect(x: 10, y: 50, width: 250, height: 150))
+//        maxPolygonsPickerView.delegate = self
+//        maxPolygonsPickerView.dataSource = self
         
         // This is where you can set your min/max values
         let minNum = 0
         let maxNum = 9
-        maxPolygonsPickerData = Array(stride(from: minNum, to: maxNum + 1, by: 1))
+//        maxPolygonsPickerData = Array(stride(from: minNum, to: maxNum + 1, by: 1))
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             self.updateState(state: self.mState)
@@ -822,6 +833,13 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     // Hide the status bar to maximize immersion in AR experiences.
     override var prefersStatusBarHidden: Bool {
         return !mHudVisible
+    }
+    
+    override func viewWillLayoutSubviews() {
+            super.viewWillLayoutSubviews()
+            // Make sure the button stays on top after layout changes
+            view.bringSubviewToFront(startRecordBtn)
+            view.bringSubviewToFront(finishRecordBtn)
     }
     
     
@@ -1770,18 +1788,18 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         rtabmap!.setMaxGainRadius(value: defaults.float(forKey: "ColorCorrectionRadius"));
         rtabmap!.setRenderingTextureDecimation(value: defaults.integer(forKey: "TextureResolution"));
         
-        if(locationManager != nil && !defaults.bool(forKey: "SaveGPS"))
-        {
-            locationManager?.stopUpdatingLocation()
-            locationManager = nil
-            mLastKnownLocation = nil
-        }
-        else if(locationManager == nil && defaults.bool(forKey: "SaveGPS"))
-        {
-            locationManager = CLLocationManager()
-            locationManager?.desiredAccuracy = kCLLocationAccuracyBestForNavigation
-            locationManager?.delegate = self
-        }
+//        if(locationManager != nil && !defaults.bool(forKey: "SaveGPS"))
+//        {
+//            locationManager?.stopUpdatingLocation()
+//            locationManager = nil
+//            mLastKnownLocation = nil
+//        }
+//        else if(locationManager == nil && defaults.bool(forKey: "SaveGPS"))
+//        {
+//            locationManager = CLLocationManager()
+//            locationManager?.desiredAccuracy = kCLLocationAccuracyBestForNavigation
+//            locationManager?.delegate = self
+//        }
     }
     
     // MARK: RTABMap protocols
