@@ -6,16 +6,40 @@
 //
 
 import SwiftUI
+import Firebase
 
+class FirebaseManager: ObservableObject {
+    @Published var isConnected: Bool = false
+    
+    init() {
+        // Check if Firebase is configured
+        if FirebaseApp.app() != nil {
+            self.isConnected = true
+        } else {
+            self.isConnected = false
+        }
+    }
+}
 
 
 struct SettingsView: View {
     @ObservedObject var settingForm = UserSettingsModel.shared
+    @StateObject private var firebaseManager = FirebaseManager()
     
     var body: some View {
         
         NavigationView {
             List {
+
+                Section("Cloud status") {
+                    if firebaseManager.isConnected {
+                        Text("Connected to Firebase ✅")
+                            .foregroundColor(.green)
+                    } else {
+                        Text("Checking connection to Firebase...❌")
+                            .foregroundColor(.red)
+                    }
+                }
                 
                 Section("Rendering") {
                     Picker("Point Cloud Density",
@@ -122,11 +146,7 @@ struct SettingsView: View {
                     }
                 }
                 
-                Section("Configure AWS Connection") {
-                    NavigationLink (destination: SettingAWSView()) {
-                        Text("Setup S3 Access ...")
-                    }
-                }
+                
             }
         }
         .navigationTitle("Settings")

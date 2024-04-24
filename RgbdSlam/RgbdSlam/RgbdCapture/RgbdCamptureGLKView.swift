@@ -116,6 +116,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     let startRecordBtn = UIButton()
     let finishRecordBtn = UIButton()
     let stopCameraBtn = UIButton()
+    let closeVisualizeBtn = UIButton()
     
     // Label
     let statusLabel = UILabel()
@@ -679,11 +680,11 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     
     // MARK: UIView Functions
     
-    private func setupButton(_ button: UIButton, title: String, iconName: String = "") {
+    private func setupButton(_ button: UIButton, title: String, iconName: String = "", imgSize: CGFloat = 30) {
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setTitle(title, for: .normal)
         //        button.backgroundColor = color
-        button.setImage(UIImage(systemName: iconName, withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium, scale: .large)), for: .normal)
+        button.setImage(UIImage(systemName: iconName, withConfiguration: UIImage.SymbolConfiguration(pointSize: imgSize, weight: .medium, scale: .large)), for: .normal)
     }
     
     private func applyConstraints() {
@@ -701,20 +702,26 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         
         // StopRecord Button Constraints
         NSLayoutConstraint.activate([
-            finishRecordBtn.topAnchor.constraint(equalTo: startRecordBtn.bottomAnchor, constant: 20),
+            finishRecordBtn.topAnchor.constraint(equalTo: view.centerYAnchor, constant: 10),
             finishRecordBtn.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
         ])
         
         // Bottom Center Button Constraints
         NSLayoutConstraint.activate([
-            stopCameraBtn.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20),
+            stopCameraBtn.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -25),
             stopCameraBtn.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+        ])
+        
+        // Bottom Center Button Constraints
+        NSLayoutConstraint.activate([
+            closeVisualizeBtn.bottomAnchor.constraint(equalTo: stopCameraBtn.topAnchor, constant: -25),
+            closeVisualizeBtn.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
         
         // Constraints for upper status label
         NSLayoutConstraint.activate([
             toastLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            toastLabel.bottomAnchor.constraint(equalTo: stopCameraBtn.topAnchor, constant: -20)
+            toastLabel.bottomAnchor.constraint(equalTo: stopCameraBtn.topAnchor, constant: -40)
         ])
         
         NSLayoutConstraint.activate([
@@ -766,6 +773,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         setupButton(startRecordBtn, title: "", iconName: "record.circle")
         setupButton(finishRecordBtn, title: "", iconName: "stop.circle")
         setupButton(stopCameraBtn, title: "Stop the Camera", iconName: "xmark.circle.fill")
+        setupButton(closeVisualizeBtn, title: "Stop Visualization", iconName: "eye.slash.fill", imgSize: 20)
         
         newScanBtn.tintColor = .white
         newScanBtn.addTarget(self, action: #selector(newScanAction), for: .touchUpInside)
@@ -778,6 +786,9 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         
         startRecordBtn.tintColor = .systemRed
         startRecordBtn.addTarget(self, action: #selector(startRecordAction), for: .touchUpInside)
+        
+        closeVisualizeBtn.tintColor = .white
+        closeVisualizeBtn.addTarget(self, action: #selector(closeVisualAction), for: .touchUpInside)
         
         statusLabel.textAlignment = .center
         statusLabel.backgroundColor = .red
@@ -792,6 +803,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         view.addSubview(startRecordBtn)
         view.addSubview(finishRecordBtn)
         view.addSubview(stopCameraBtn)
+        view.addSubview(closeVisualizeBtn)
         
         // Add Label to the view
         view.addSubview(statusLabel)
@@ -843,12 +855,52 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
             view.bringSubviewToFront(startRecordBtn)
             view.bringSubviewToFront(finishRecordBtn)
             view.bringSubviewToFront(stopCameraBtn)
+            view.bringSubviewToFront(closeVisualizeBtn)
             view.bringSubviewToFront(statusLabel)
             view.bringSubviewToFront(toastLabel)
     }
     
     
     // MARK: Update Status and etc
+    
+    private func updateLayoutButtonLabel(state: State){
+        
+        switch state {
+        case .STATE_CAMERA:
+            newScanBtn.isHidden = true
+            startRecordBtn.isHidden = false
+            stopCameraBtn.isHidden = false
+            finishRecordBtn.isHidden = true
+            closeVisualizeBtn.isHidden = true
+        case .STATE_MAPPING:
+            newScanBtn.isHidden = true
+            stopCameraBtn.isHidden = false
+            startRecordBtn.isHidden = true
+            finishRecordBtn.isHidden = false
+            closeVisualizeBtn.isHidden = true
+        case .STATE_PROCESSING,
+                .STATE_VISUALIZING_WHILE_LOADING,
+                .STATE_VISUALIZING_CAMERA:
+            newScanBtn.isHidden = true
+            stopCameraBtn.isHidden = state != .STATE_VISUALIZING_CAMERA
+            startRecordBtn.isHidden = true
+            finishRecordBtn.isHidden = true
+            stopCameraBtn.isHidden = true
+        case .STATE_VISUALIZING:
+            newScanBtn.isHidden = true
+            stopCameraBtn.isHidden = true
+            startRecordBtn.isHidden = true
+            finishRecordBtn.isHidden = true
+            closeVisualizeBtn.isHidden = !mHudVisible
+        default:
+            newScanBtn.isHidden =  mState != .STATE_WELCOME
+            stopCameraBtn.isHidden = true
+            startRecordBtn.isHidden = true
+            finishRecordBtn.isHidden = true
+            closeVisualizeBtn.isHidden = true
+        }
+        
+    }
     
     private func updateState(state: State)
     {
@@ -869,6 +921,8 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         var actionExportEnabled: Bool
         var actionOptimizeEnabled: Bool
         var actionSettingsEnabled: Bool
+        
+        updateLayoutButtonLabel(state: mState)
         
         switch mState {
         case .STATE_CAMERA:
@@ -2009,6 +2063,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         closeVisualization()
         rtabmap!.postExportation(visualize: false)
     }
+    
 }
 
 extension RGBDCaptureViewController: GLKViewControllerDelegate {
