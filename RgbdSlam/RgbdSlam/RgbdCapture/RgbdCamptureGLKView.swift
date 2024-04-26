@@ -11,6 +11,8 @@ import ARKit
 import StoreKit
 import Combine
 import Zip
+import FirebaseAuth
+import FirebaseStorage
 
 struct RGBDCaptureViewControllerWrapper: UIViewControllerRepresentable {
     var loadFileURL: URL?
@@ -29,9 +31,12 @@ struct RGBDCaptureViewControllerWrapper: UIViewControllerRepresentable {
 }
 
 class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapObserver {
-  
+    
     var loadFileURL:URL?
     var isLoadFile:Bool?
+    
+    var handle: AuthStateDidChangeListenerHandle?
+    private var isLoggedIn : Bool = false
     
     enum State {
         case STATE_WELCOME,    // Camera/Motion off - showing only buttons open and start new scan
@@ -127,18 +132,19 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     let stopCameraBtn = UIButton()
     let closeVisualizeBtn = UIButton()
     let resumeScanBtn = UIButton()
+    let exportScanBtn = UIButton()
     
     // Label
     let statusLabel = UILabel()
     let toastLabel = UILabel()
-
+    
     
     // MARK: Functions
     
     func getLoadedURL() throws -> URL {
         guard let fileURL = self.loadFileURL else {
-             throw FileError.fileNotFound
-         }
+            throw FileError.fileNotFound
+        }
         return fileURL
     }
     
@@ -734,6 +740,11 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
             stopCameraBtn.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
         
+        NSLayoutConstraint.activate([
+            exportScanBtn.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -25),
+            exportScanBtn.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+        ])
+        
         // Bottom Center Button Constraints
         NSLayoutConstraint.activate([
             closeVisualizeBtn.bottomAnchor.constraint(equalTo: stopCameraBtn.topAnchor, constant: -25),
@@ -767,16 +778,29 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         
         // The screen shouldn't dim during AR experiences.
         UIApplication.shared.isIdleTimerDisabled = true
+        handle = Auth.auth().addStateDidChangeListener { [weak self] (auth, user) in
+            if let user = user {
+                // User is signed in.
+                print("User is logged in: \(user.uid)")
+                // Update UI or transition to another screen
+                self?.isLoggedIn = true
+            } else {
+                // No user is signed in.
+                print("User is not logged in.")
+                // Show login screen or perform other appropriate actions
+                self?.isLoggedIn = false
+            }
+        }
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-//        chosenScan?.$filePath
-//            .sink(receiveValue: { [weak self] path in
-//                self?.updateUI(path: path)
-//            })
-//            .store(in: &cancellables)
+        //        chosenScan?.$filePath
+        //            .sink(receiveValue: { [weak self] path in
+        //                self?.updateUI(path: path)
+        //            })
+        //            .store(in: &cancellables)
         
         
         self.toastLabel.isHidden = true
@@ -804,6 +828,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         setupButton(stopCameraBtn, title: "Stop the Camera", iconName: "xmark.circle.fill")
         setupButton(closeVisualizeBtn, title: "Stop Visualization", iconName: "eye.slash.fill", imgSize: 20)
         setupButton(resumeScanBtn, title: "", iconName: "memories")
+        setupButton(exportScanBtn, title: "Export Scan Model", iconName: "square.and.arrow.up.circle.fill")
         
         newScanBtn.tintColor = .white
         newScanBtn.addTarget(self, action: #selector(newScanAction), for: .touchUpInside)
@@ -823,9 +848,13 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         resumeScanBtn.tintColor = .white
         resumeScanBtn.addTarget(self, action: #selector(resumeScanAction), for: .touchUpInside)
         
+        exportScanBtn.tintColor = .white
+        exportScanBtn.addTarget(self, action: #selector(exportScanAction), for: .touchUpInside)
+        
         statusLabel.textAlignment = .center
         statusLabel.backgroundColor = .red
         statusLabel.translatesAutoresizingMaskIntoConstraints = false
+        
         
         toastLabel.backgroundColor = .green
         toastLabel.textAlignment = .left
@@ -838,6 +867,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         view.addSubview(stopCameraBtn)
         view.addSubview(closeVisualizeBtn)
         view.addSubview(resumeScanBtn)
+        view.addSubview(exportScanBtn)
         
         // Add Label to the view
         view.addSubview(statusLabel)
@@ -903,8 +933,15 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         view.bringSubviewToFront(statusLabel)
         view.bringSubviewToFront(toastLabel)
         view.bringSubviewToFront(resumeScanBtn)
+        view.bringSubviewToFront(exportScanBtn)
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        if let handle = handle {
+            Auth.auth().removeStateDidChangeListener(handle)
+        }
+    }
     
     // MARK: Update Status and etc
     
@@ -918,6 +955,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
             finishRecordBtn.isHidden = true
             closeVisualizeBtn.isHidden = true
             resumeScanBtn.isHidden = true
+            exportScanBtn.isHidden = true
         case .STATE_MAPPING:
             newScanBtn.isHidden = true
             stopCameraBtn.isHidden = false
@@ -925,6 +963,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
             finishRecordBtn.isHidden = false
             closeVisualizeBtn.isHidden = true
             resumeScanBtn.isHidden = true
+            exportScanBtn.isHidden = true
         case .STATE_PROCESSING,
                 .STATE_VISUALIZING_WHILE_LOADING,
                 .STATE_VISUALIZING_CAMERA:
@@ -934,6 +973,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
             finishRecordBtn.isHidden = true
             stopCameraBtn.isHidden = true
             resumeScanBtn.isHidden = true
+            exportScanBtn.isHidden = true
         case .STATE_VISUALIZING:
             newScanBtn.isHidden = true
             stopCameraBtn.isHidden = true
@@ -941,6 +981,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
             finishRecordBtn.isHidden = true
             closeVisualizeBtn.isHidden = !mHudVisible
             resumeScanBtn.isHidden = false
+            exportScanBtn.isHidden = !mHudVisible
         default:
             newScanBtn.isHidden =  mState != .STATE_WELCOME
             stopCameraBtn.isHidden = true
@@ -948,6 +989,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
             finishRecordBtn.isHidden = true
             closeVisualizeBtn.isHidden = true
             resumeScanBtn.isHidden = true
+            exportScanBtn.isHidden = true
         }
         
     }
@@ -1760,16 +1802,31 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
                 if(success)
                 {
                     let alertShare = UIAlertController(title: "Mesh/Cloud Saved!", message: "\(fileName+".zip") (\(zipFileUrl.fileSizeString) successfully exported in Documents of RTAB-Map! Share it?", preferredStyle: .alert)
-                    let alertActionYes = UIAlertAction(title: "Yes", style: .default) {
+                    
+                    let alertActionYes = UIAlertAction(title: "Share to system", style: .default) {
                         (UIAlertAction) -> Void in
                         self.shareFile(zipFileUrl)
                     }
                     alertShare.addAction(alertActionYes)
+                    
+                    
+                    
+                    if self.isLoggedIn {
+                        let alertActionUpload = UIAlertAction(title: "Upload to Cloud", style: .default) {
+                            (UIAlertAction) -> Void in
+                            NSLog("upload to cloud")
+                            
+                            self.uploadToFirebase(fileURL: zipFileUrl, fileName: "\(fileName).zip")
+                        }
+                        alertShare.addAction(alertActionUpload)
+                    }
+                    
                     let alertActionNo = UIAlertAction(title: "No", style: .cancel) {
                         (UIAlertAction) -> Void in
                         
                     }
                     alertShare.addAction(alertActionNo)
+                    
                     
                     self.present(alertShare, animated: true, completion: nil)
                 }
@@ -1781,6 +1838,49 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
             })
         })
     }
+    
+    func uploadToFirebase(fileURL: URL, fileName: String) {
+        guard let user = Auth.auth().currentUser else {
+            return
+        }
+        
+        let storageRef = Storage.storage().reference().child("uploads/\(user.uid)/\(fileName).zip")
+        
+        let alert = UIAlertController(title: "Uploading...", message: "\n\n", preferredStyle: .alert)
+        let progressView = UIProgressView(progressViewStyle: .default)
+        progressView.setProgress(0.0, animated: true)
+        progressView.frame = CGRect(x: 10, y: 70, width: 250, height: 0)
+        alert.view.addSubview(progressView)
+        
+        // Present the alert
+        present(alert, animated: true, completion: nil)
+        
+        // Start the upload
+        let uploadTask = storageRef.putFile(from: fileURL, metadata: nil) { metadata, error in
+            alert.dismiss(animated: true, completion: nil)
+            if let error = error {
+                self.showCompletionAlert(title: "Error", message: error.localizedDescription)
+                return
+            }
+            self.showCompletionAlert(title: "Success", message: "File uploaded successfully!")
+        }
+        
+        // Observe the upload progress
+        uploadTask.observe(.progress) { snapshot in
+            guard let progress = snapshot.progress else { return }
+            DispatchQueue.main.async {
+                progressView.progress = Float(progress.fractionCompleted)
+            }
+        }
+    }
+    
+    func showCompletionAlert(title: String, message: String) {
+            let completionAlert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            completionAlert.addAction(UIAlertAction(title: "OK", style: .default))
+            DispatchQueue.main.async {
+                self.present(completionAlert, animated: true, completion: nil)
+            }
+        }
     
     func openLibrary()
     {
@@ -2116,6 +2216,10 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     
     @objc func resumeScanAction () {
         self.resumeScan()
+    }
+    
+    @objc func exportScanAction () {
+        self.exportOBJPLY()
     }
 }
 

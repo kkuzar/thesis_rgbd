@@ -8,7 +8,7 @@
 import SwiftUI
 import SwiftData
 import FirebaseAuth
-
+import FirebaseStorage
 
 
 struct ContentView: View {
@@ -17,8 +17,8 @@ struct ContentView: View {
     @StateObject var model = ScanFilesModel()
     @StateObject var authUser = AuthUser()
     
-    //    @State private var showThumbnail = false
-    //    @State private var showAlertDelete = false
+//    @State private var uploadProgress: Float = 0.0
+//    @State private var isUploading = false
     
     var body: some View {
         NavigationSplitView {
@@ -65,11 +65,11 @@ struct ContentView: View {
                                             .foregroundColor(.gray)
                                         }
                                     }
-                
+                                
                             }
-                            .onTapGesture(count: 2) {
-                                print("double tap")
-                            }
+//                            .onTapGesture(count: 2) {
+//                                print("double tap")
+//                            }
                             .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                 Button(role: .destructive) {
                                     model.remove(fileURL: model.scanFiles[index].scanPath)
@@ -77,48 +77,14 @@ struct ContentView: View {
                                     Label("Delete", systemImage: "trash")
                                 }
                             }
-                            .swipeActions(edge: .leading) {
-                                //                                Button {
-                                //                                    showRename = true
-                                //                                } label: {
-                                //                                    Label("Rename", systemImage: "pencil")
-                                //                                }
-                                //                                .tint(.gray)
-                                
-                                Button {
-                                    model.upload()
-                                } label: {
-                                    Label("Upload", systemImage: "square.and.arrow.up.circle.fill")
-                                }
-                                .tint(.blue)
-                            }
-                            //                            .onLongPressGesture(minimumDuration: 0.2, maximumDistance: 10, pressing: { isPressing in
-                            //                                if isPressing {
-                            //                                    //
-                            //                                } else {
-                            //
-                            //                                }
-                            //                            }) {
-                            //                                print("Long press detected")
-                            //                                showThumbnail = true
-                            //
-                            //                            }
-                            //                            .sheet(isPresented: $showThumbnail) {
-                            //                                // Assuming you have an image named 'photo' in your assets
-                            //                                ThumbnailAlertView(isPresented: $showThumbnail, image: model.scanFiles[index].scanThumbnail ?? UIImage(systemName: "photo")!)
-                            //                            }
-                            //                            .alert("Delete Scan?", isPresented: $showAlertDelete) {
-                            //                                Button("Cancel", role: .cancel) {
-                            //                                    showAlertDelete = false
-                            //                                }
-                            //                                Button("Delete", role: .destructive) {
-                            //                                    model.remove(fileURL: item.scanPath)
-                            //                                    showAlertDelete = false
-                            //                                }
-                            //                            } message: {
-                            //                                Text("Are you sure delete this scan file?")
-                            //                            }
-                            
+//                            .swipeActions(edge: .leading) {
+//                                Button {
+//                                    model.upload()
+//                                } label: {
+//                                    Label("Upload", systemImage: "square.and.arrow.up.circle.fill")
+//                                }
+//                                .tint(.blue)
+//                            }
                         }
                     }
                 } else {
@@ -148,4 +114,33 @@ struct ContentView: View {
     
     
     // View functions below
+    
+//    func uploadFile(fileURL: URL) {
+//            guard let user = Auth.auth().currentUser else {
+//                print("User not authenticated")
+//                return
+//            }
+//            
+//            // Simulated file data and path
+//            let data = Data("File content".utf8)
+//            let path = "uploads/\(user.uid)/file.txt"
+//            
+//            let storageRef = Storage.storage().reference(withPath: path)
+//            let uploadTask = storageRef.putData(data, metadata: nil) { metadata, error in
+//                self.isUploading = false
+//                if let error = error {
+//                    print("Error uploading file: \(error.localizedDescription)")
+//                    return
+//                }
+//                print("Upload complete: \(metadata?.path ?? "Unknown path")")
+//            }
+//            
+//            // Handle upload progress
+//            uploadTask.observe(.progress) { snapshot in
+//                guard let progress = snapshot.progress else { return }
+//                self.uploadProgress = Float(progress.fractionCompleted)
+//                self.isUploading = true
+//            }
+//        }
+    
 }

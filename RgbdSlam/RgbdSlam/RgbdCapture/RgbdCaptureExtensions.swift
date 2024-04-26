@@ -80,3 +80,22 @@ enum FileError: Error {
     case fileNotFound
     case unreadableContent
 }
+
+extension UILabel {
+    func adjustFontSizeToFitWidth() {
+        guard let text = self.text, !text.isEmpty else { return }
+        let labelWidth = self.bounds.width
+        let labelHeight = self.bounds.height
+        
+        var fontSize = UIFont.systemFont(ofSize: 24)  // Start with a large font size
+        var size = text.size(withAttributes: [.font: fontSize])
+        
+        while size.width > labelWidth || size.height > labelHeight {
+            fontSize = fontSize.withSize(fontSize.pointSize - 1)
+            size = text.size(withAttributes: [.font: fontSize])
+        }
+        
+        self.font = fontSize
+    }
+}
+

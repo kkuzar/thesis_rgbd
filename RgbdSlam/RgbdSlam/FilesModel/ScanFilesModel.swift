@@ -73,6 +73,8 @@ class ScanFilesModel: ObservableObject {
     @Published var scanFiles: [ScanLibarayObject] = []
     @Published var fileURL: [URL]?
     
+    private var rtabmap: RTABMap?
+    
     init() {
         // self.fileList = fetchDatabaseFiles()
         let existScan: [URL] = getExistScan()
