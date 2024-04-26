@@ -76,3 +76,7 @@ extension URL {
     }
 }
 
+enum FileError: Error {
+    case fileNotFound
+    case unreadableContent
+}

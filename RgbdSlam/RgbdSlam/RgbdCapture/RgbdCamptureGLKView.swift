@@ -13,10 +13,12 @@ import Combine
 import Zip
 
 struct RGBDCaptureViewControllerWrapper: UIViewControllerRepresentable {
-    @EnvironmentObject var chosenScan: ChosenScan
+    var loadFileURL: URL?
+    var isLoadFile: Bool = false
     func makeUIViewController(context: Context) -> some GLKViewController {
         let vc = RGBDCaptureViewController()
-        vc.chosenScan = chosenScan
+        vc.isLoadFile = isLoadFile
+        vc.loadFileURL = loadFileURL
         return vc
     }
     
@@ -27,8 +29,9 @@ struct RGBDCaptureViewControllerWrapper: UIViewControllerRepresentable {
 }
 
 class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapObserver {
-    var chosenScan: ChosenScan?
-    var cancellables: Set<AnyCancellable> = []
+  
+    var loadFileURL:URL?
+    var isLoadFile:Bool?
     
     enum State {
         case STATE_WELCOME,    // Camera/Motion off - showing only buttons open and start new scan
@@ -123,22 +126,21 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     let finishRecordBtn = UIButton()
     let stopCameraBtn = UIButton()
     let closeVisualizeBtn = UIButton()
+    let resumeScanBtn = UIButton()
     
     // Label
     let statusLabel = UILabel()
     let toastLabel = UILabel()
-    
-    // MARK: Communicate with Swift UI
-    func updateUI(path: String) {
-        // Update your UI elements with new data
-        print("Updated in UIKit: \(path)")
-    }
-    
-    func updateLibPath(_ path: String) {
-        // Optionally handle direct data updates from SwiftUI
-    }
+
     
     // MARK: Functions
+    
+    func getLoadedURL() throws -> URL {
+        guard let fileURL = self.loadFileURL else {
+             throw FileError.fileNotFound
+         }
+        return fileURL
+    }
     
     @objc func defaultsChanged(){
         updateDisplayFromDefaults()
@@ -720,6 +722,12 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
             finishRecordBtn.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
         ])
         
+        // StopRecord Button Constraints
+        NSLayoutConstraint.activate([
+            resumeScanBtn.topAnchor.constraint(equalTo: view.centerYAnchor, constant: 10),
+            resumeScanBtn.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
+        ])
+        
         // Bottom Center Button Constraints
         NSLayoutConstraint.activate([
             stopCameraBtn.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -25),
@@ -770,6 +778,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
 //            })
 //            .store(in: &cancellables)
         
+        
         self.toastLabel.isHidden = true
         depthSupported = ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth)
         
@@ -794,6 +803,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         setupButton(finishRecordBtn, title: "", iconName: "stop.circle")
         setupButton(stopCameraBtn, title: "Stop the Camera", iconName: "xmark.circle.fill")
         setupButton(closeVisualizeBtn, title: "Stop Visualization", iconName: "eye.slash.fill", imgSize: 20)
+        setupButton(resumeScanBtn, title: "", iconName: "memories")
         
         newScanBtn.tintColor = .white
         newScanBtn.addTarget(self, action: #selector(newScanAction), for: .touchUpInside)
@@ -810,6 +820,9 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         closeVisualizeBtn.tintColor = .white
         closeVisualizeBtn.addTarget(self, action: #selector(closeVisualAction), for: .touchUpInside)
         
+        resumeScanBtn.tintColor = .white
+        resumeScanBtn.addTarget(self, action: #selector(resumeScanAction), for: .touchUpInside)
+        
         statusLabel.textAlignment = .center
         statusLabel.backgroundColor = .red
         statusLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -824,6 +837,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         view.addSubview(finishRecordBtn)
         view.addSubview(stopCameraBtn)
         view.addSubview(closeVisualizeBtn)
+        view.addSubview(resumeScanBtn)
         
         // Add Label to the view
         view.addSubview(statusLabel)
@@ -854,9 +868,19 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         let maxNum = 9
         //        maxPolygonsPickerData = Array(stride(from: minNum, to: maxNum + 1, by: 1))
         
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            if self.isLoadFile ?? false {
+                let fileURL = try! self.getLoadedURL()
+                self.isLoadFile = false
+                self.loadFileURL = nil
+                self.openDatabase(fileUrl: fileURL)
+            }
+        }
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             self.updateState(state: self.mState)
         }
+        
     }
     
     // Auto-hide the home indicator to maximize immersion in AR experiences.
@@ -878,6 +902,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         view.bringSubviewToFront(closeVisualizeBtn)
         view.bringSubviewToFront(statusLabel)
         view.bringSubviewToFront(toastLabel)
+        view.bringSubviewToFront(resumeScanBtn)
     }
     
     
@@ -892,12 +917,14 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
             stopCameraBtn.isHidden = false
             finishRecordBtn.isHidden = true
             closeVisualizeBtn.isHidden = true
+            resumeScanBtn.isHidden = true
         case .STATE_MAPPING:
             newScanBtn.isHidden = true
             stopCameraBtn.isHidden = false
             startRecordBtn.isHidden = true
             finishRecordBtn.isHidden = false
             closeVisualizeBtn.isHidden = true
+            resumeScanBtn.isHidden = true
         case .STATE_PROCESSING,
                 .STATE_VISUALIZING_WHILE_LOADING,
                 .STATE_VISUALIZING_CAMERA:
@@ -906,18 +933,21 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
             startRecordBtn.isHidden = true
             finishRecordBtn.isHidden = true
             stopCameraBtn.isHidden = true
+            resumeScanBtn.isHidden = true
         case .STATE_VISUALIZING:
             newScanBtn.isHidden = true
             stopCameraBtn.isHidden = true
             startRecordBtn.isHidden = true
             finishRecordBtn.isHidden = true
             closeVisualizeBtn.isHidden = !mHudVisible
+            resumeScanBtn.isHidden = false
         default:
             newScanBtn.isHidden =  mState != .STATE_WELCOME
             stopCameraBtn.isHidden = true
             startRecordBtn.isHidden = true
             finishRecordBtn.isHidden = true
             closeVisualizeBtn.isHidden = true
+            resumeScanBtn.isHidden = true
         }
         
     }
@@ -2084,6 +2114,9 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         rtabmap!.postExportation(visualize: false)
     }
     
+    @objc func resumeScanAction () {
+        self.resumeScan()
+    }
 }
 
 extension RGBDCaptureViewController: GLKViewControllerDelegate {

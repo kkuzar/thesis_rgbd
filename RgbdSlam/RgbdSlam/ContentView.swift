@@ -16,7 +16,9 @@ struct ContentView: View {
     
     @StateObject var model = ScanFilesModel()
     @StateObject var authUser = AuthUser()
-    @State private var showAlert = false
+    
+    //    @State private var showThumbnail = false
+    //    @State private var showAlertDelete = false
     
     var body: some View {
         NavigationSplitView {
@@ -50,35 +52,38 @@ struct ContentView: View {
                         ForEach(model.scanFiles.indices, id:\.self) { index in
                             let item = model.scanFiles[index]
                             HStack {
-                                
-                                VStack(alignment: .leading) {
-                                    Text(item.scanName)
-                                        .font(.headline)
-                                        .font(.system(size: 20))
-                                    Text("Size: \(item.scanSizeString)\nCreated: " +
-                                         (try! item.scanDate?.getFormattedDate(format: "dd-MM-yyyy HH:mm:ss") ?? "Date not available"))
-                                    .font(.system(size: 12))
-                                    .font(.subheadline)
-                                    .foregroundColor(.gray)
-                                }
+                                NavigationLink (destination: RGBDCaptureViewControllerWrapper(loadFileURL: item.scanPath, isLoadFile: true)
+                                    .edgesIgnoringSafeArea(.all)) {
+                                        VStack(alignment: .leading) {
+                                            Text(item.scanName)
+                                                .font(.headline)
+                                                .font(.system(size: 20))
+                                            Text("Size: \(item.scanSizeString)\nCreated: " +
+                                                 (try! item.scanDate?.getFormattedDate(format: "dd-MM-yyyy HH:mm:ss") ?? "Date not available"))
+                                            .font(.system(size: 12))
+                                            .font(.subheadline)
+                                            .foregroundColor(.gray)
+                                        }
+                                    }
+                
                             }
                             .onTapGesture(count: 2) {
                                 print("double tap")
                             }
                             .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                 Button(role: .destructive) {
-                                    model.remove()
+                                    model.remove(fileURL: model.scanFiles[index].scanPath)
                                 } label: {
                                     Label("Delete", systemImage: "trash")
                                 }
                             }
                             .swipeActions(edge: .leading) {
-                                Button {
-                                    model.rename()
-                                } label: {
-                                    Label("Rename", systemImage: "pencil")
-                                }
-                                .tint(.gray)
+                                //                                Button {
+                                //                                    showRename = true
+                                //                                } label: {
+                                //                                    Label("Rename", systemImage: "pencil")
+                                //                                }
+                                //                                .tint(.gray)
                                 
                                 Button {
                                     model.upload()
@@ -87,21 +92,32 @@ struct ContentView: View {
                                 }
                                 .tint(.blue)
                             }
-                            .onLongPressGesture(minimumDuration: 0.2, maximumDistance: 10, pressing: { isPressing in
-                                if isPressing {
-                                   //
-                                } else {
-                                   
-                                }
-                            }) {
-                                print("Long press detected")
-                                showAlert = true
-                                
-                            }
-                            .sheet(isPresented: $showAlert) {
-                                // Assuming you have an image named 'photo' in your assets
-                                ThumbnailAlertView(isPresented: $showAlert, image: item.scanThumbnail ?? UIImage(systemName: "photo")!)
-                            }
+                            //                            .onLongPressGesture(minimumDuration: 0.2, maximumDistance: 10, pressing: { isPressing in
+                            //                                if isPressing {
+                            //                                    //
+                            //                                } else {
+                            //
+                            //                                }
+                            //                            }) {
+                            //                                print("Long press detected")
+                            //                                showThumbnail = true
+                            //
+                            //                            }
+                            //                            .sheet(isPresented: $showThumbnail) {
+                            //                                // Assuming you have an image named 'photo' in your assets
+                            //                                ThumbnailAlertView(isPresented: $showThumbnail, image: model.scanFiles[index].scanThumbnail ?? UIImage(systemName: "photo")!)
+                            //                            }
+                            //                            .alert("Delete Scan?", isPresented: $showAlertDelete) {
+                            //                                Button("Cancel", role: .cancel) {
+                            //                                    showAlertDelete = false
+                            //                                }
+                            //                                Button("Delete", role: .destructive) {
+                            //                                    model.remove(fileURL: item.scanPath)
+                            //                                    showAlertDelete = false
+                            //                                }
+                            //                            } message: {
+                            //                                Text("Are you sure delete this scan file?")
+                            //                            }
                             
                         }
                     }
@@ -131,23 +147,5 @@ struct ContentView: View {
     
     
     
-    //    private func addItem() {
-    //        withAnimation {
-    //            let newItem = Item(timestamp: Date())
-    //            modelContext.insert(newItem)
-    //        }
-    //    }
-    //
-    //    private func deleteItems(offsets: IndexSet) {
-    //        withAnimation {
-    //            for index in offsets {
-    //                modelContext.delete(items[index])
-    //            }
-    //        }
-    //    }
-}
-
-#Preview {
-    ContentView()
-    // .modelContainer(for: Item.self, inMemory: true)
+    // View functions below
 }

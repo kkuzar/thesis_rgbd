@@ -84,6 +84,12 @@ class ScanFilesModel: ObservableObject {
         
     }
     
+    func refresh() {
+        let existScan: [URL] = getExistScan()
+        self.fileURL = existScan
+        initScanLibObj(scansUrl:existScan)
+    }
+    
     func getDocumentDirectory() -> URL {
         return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
     }
@@ -112,16 +118,30 @@ class ScanFilesModel: ObservableObject {
         }
     }
     
-    func rename() {
-        
+    func rename(fileURL: URL) {
+//        if !FileManager.default.fileExists(atPath: filePath) {
+//            do {
+//                try FileManager.default.moveItem(at: fileURL, to: URL(fileURLWithPath: filePath))
+//                print("File \(fileURL) renamed to \(filePath)")
+//            }
+//            catch {
+//                print("Error renaming file \(fileURL) to \(filePath)")
+//            }
+//        }
     }
     
     func upload() {
         
     }
     
-    func remove() {
-        
+    func remove(fileURL: URL) {
+        do {
+            try FileManager.default.removeItem(at: fileURL)
+            print("File \(fileURL) deleted")
+        }
+        catch {
+            print("Error deleting file \(fileURL)")
+        }
     }
     
     //    func fetchDatabaseFiles() -> [String] {
