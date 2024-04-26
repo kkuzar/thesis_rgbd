@@ -8,10 +8,11 @@
 import SwiftUI
 
 struct RgbdCaptureView: View {
-    
+    @StateObject var chosenScan = ChosenScan()
     // MARK: View body
     var body: some View {
         RGBDCaptureViewControllerWrapper()
+            .environmentObject(chosenScan)
             .edgesIgnoringSafeArea(.all)
 //            .highPriorityGesture(SimultaneousGesture.onChanged() { _ in
 //                // This is just to show where you might configure SwiftUI to ignore gestures.

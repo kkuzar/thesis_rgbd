@@ -9,20 +9,26 @@ import SwiftUI
 import GLKit
 import ARKit
 import StoreKit
+import Combine
 import Zip
 
 struct RGBDCaptureViewControllerWrapper: UIViewControllerRepresentable {
-    
+    @EnvironmentObject var chosenScan: ChosenScan
     func makeUIViewController(context: Context) -> some GLKViewController {
-        return RGBDCaptureViewController()
+        let vc = RGBDCaptureViewController()
+        vc.chosenScan = chosenScan
+        return vc
     }
     
     func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
         // Update the controller when your app's state changes, if necessary.
+        // uiViewController.updateLibPath(chosenScan.filePath)
     }
 }
 
 class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapObserver {
+    var chosenScan: ChosenScan?
+    var cancellables: Set<AnyCancellable> = []
     
     enum State {
         case STATE_WELCOME,    // Camera/Motion off - showing only buttons open and start new scan
@@ -36,7 +42,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     }
     
     private let arView = ARSCNView()
-//    private let session = ARSession()
+    //    private let session = ARSession()
     private var locationManager: CLLocationManager?
     private var mLastKnownLocation: CLLocation?
     private var mLastLightEstimate: CGFloat?
@@ -122,7 +128,15 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     let statusLabel = UILabel()
     let toastLabel = UILabel()
     
+    // MARK: Communicate with Swift UI
+    func updateUI(path: String) {
+        // Update your UI elements with new data
+        print("Updated in UIKit: \(path)")
+    }
     
+    func updateLibPath(_ path: String) {
+        // Optionally handle direct data updates from SwiftUI
+    }
     
     // MARK: Functions
     
@@ -304,7 +318,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         }
     }
     
-   
+    
     
     // This is called when a session fails.
     func session(_ session: ARSession, didFailWithError error: Error) {
@@ -317,7 +331,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
             errorWithInfo.localizedRecoverySuggestion
         ]
         let errorMessage = messages.compactMap({ $0 }).joined(separator: "\n")
-
+        
         DispatchQueue.main.async {
             // Present an alert informing about the error that has occurred.
             let alertController = UIAlertController(title: "The AR session failed.", message: errorMessage, preferredStyle: .alert)
@@ -424,7 +438,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         }
         
         let alertController = UIAlertController(title: "Append Mode", message: "The camera preview will not be aligned to map on start, move to a previously scanned area, then push Record. When a loop closure is detected, new scans will be appended to map.", preferredStyle: .alert)
-
+        
         let okAction = UIAlertAction(title: "OK", style: .default) { (action) in
         }
         alertController.addAction(okAction)
@@ -478,7 +492,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
                 alert.addAction(alertActionCancel)
                 let alertActionYes = UIAlertAction(title: "Yes", style: .default) {
                     (UIAlertAction2) -> Void in
-
+                    
                     let fileName = Date().getFormattedDate(format: "yyMMdd-HHmmss") + ".db"
                     let outputDbPath = self.getDocumentDirectory().appendingPathComponent(fileName).path
                     
@@ -560,7 +574,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         else
         {
             self.rtabmap!.openDatabase(databasePath: tmpDatabase.path, databaseInMemory: inMemory, optimize: false, clearDatabase: true)
-
+            
             if(!(self.mState == State.STATE_CAMERA || self.mState == State.STATE_MAPPING))
             {
                 self.setGLCamera(type: 0);
@@ -598,7 +612,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
                 }
             }
         }
-
+        
         //Step : 3
         var placeholder = Date().getFormattedDate(format: "yyMMdd-HHmmss")
         if self.openedDatabasePath != nil && !self.openedDatabasePath!.path.isEmpty
@@ -612,14 +626,14 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
             }
         }
         alert.addTextField { (textField) in
-                textField.text = placeholder
+            textField.text = placeholder
         }
-
+        
         //Step : 4
         alert.addAction(save)
         //Cancel action
         alert.addAction(UIAlertAction(title: "Cancel", style: .default) { (alertAction) in })
-
+        
         self.present(alert, animated: true) {
             alert.textFields?.first?.selectAll(nil)
         }
@@ -629,7 +643,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     {
         arView.session.pause()
         arView.removeFromSuperview()
-//        locationManager?.stopUpdatingLocation()
+        //        locationManager?.stopUpdatingLocation()
         rtabmap?.setPausedMapping(paused: true)
         rtabmap?.stopCamera()
         setGLCamera(type: 2)
@@ -750,6 +764,12 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     override func viewDidLoad() {
         super.viewDidLoad()
         
+//        chosenScan?.$filePath
+//            .sink(receiveValue: { [weak self] path in
+//                self?.updateUI(path: path)
+//            })
+//            .store(in: &cancellables)
+        
         self.toastLabel.isHidden = true
         depthSupported = ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth)
         
@@ -777,7 +797,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         
         newScanBtn.tintColor = .white
         newScanBtn.addTarget(self, action: #selector(newScanAction), for: .touchUpInside)
-
+        
         finishRecordBtn.tintColor = .white
         finishRecordBtn.addTarget(self, action: #selector(finishRecordAction), for: .touchUpInside)
         
@@ -825,14 +845,14 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         registerSettingsBundle()
         updateDisplayFromDefaults()
         
-//        maxPolygonsPickerView = UIPickerView(frame: CGRect(x: 10, y: 50, width: 250, height: 150))
-//        maxPolygonsPickerView.delegate = self
-//        maxPolygonsPickerView.dataSource = self
+        //        maxPolygonsPickerView = UIPickerView(frame: CGRect(x: 10, y: 50, width: 250, height: 150))
+        //        maxPolygonsPickerView.delegate = self
+        //        maxPolygonsPickerView.dataSource = self
         
         // This is where you can set your min/max values
         let minNum = 0
         let maxNum = 9
-//        maxPolygonsPickerData = Array(stride(from: minNum, to: maxNum + 1, by: 1))
+        //        maxPolygonsPickerData = Array(stride(from: minNum, to: maxNum + 1, by: 1))
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             self.updateState(state: self.mState)
@@ -850,14 +870,14 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     }
     
     override func viewWillLayoutSubviews() {
-            super.viewWillLayoutSubviews()
-            // Make sure the button stays on top after layout changes
-            view.bringSubviewToFront(startRecordBtn)
-            view.bringSubviewToFront(finishRecordBtn)
-            view.bringSubviewToFront(stopCameraBtn)
-            view.bringSubviewToFront(closeVisualizeBtn)
-            view.bringSubviewToFront(statusLabel)
-            view.bringSubviewToFront(toastLabel)
+        super.viewWillLayoutSubviews()
+        // Make sure the button stays on top after layout changes
+        view.bringSubviewToFront(startRecordBtn)
+        view.bringSubviewToFront(finishRecordBtn)
+        view.bringSubviewToFront(stopCameraBtn)
+        view.bringSubviewToFront(closeVisualizeBtn)
+        view.bringSubviewToFront(statusLabel)
+        view.bringSubviewToFront(toastLabel)
     }
     
     
@@ -1193,13 +1213,13 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     
     func shareFile(_ fileUrl: URL) {
         let fileURL = NSURL(fileURLWithPath: fileUrl.path)
-
+        
         // Create the Array which includes the files you want to share
         var filesToShare = [Any]()
-
+        
         // Add the path of the file to the Array
         filesToShare.append(fileURL)
-
+        
         // Make the activityViewContoller which shows the share-view
         let activityViewController = UIActivityViewController(activityItems: filesToShare, applicationActivities: nil)
         
@@ -1208,7 +1228,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
             popoverController.sourceView = self.view
             popoverController.permittedArrowDirections = UIPopoverArrowDirection(rawValue: 0)
         }
-
+        
         // Show the share-view
         self.present(activityViewController, animated: true, completion: nil)
     }
@@ -1226,7 +1246,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         
         //  Show it to your users
         self.present(progressDialog, animated: true)
-
+        
         updateState(state: .STATE_PROCESSING);
         var status = 0
         DispatchQueue.background(background: {
@@ -1334,7 +1354,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
             })
             
         }))
-
+        
         updateState(state: .STATE_PROCESSING);
         
         present(alertView, animated: true, completion: {
@@ -1395,13 +1415,13 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
                             {
                                 self.setMeshRendering(viewMode: 2)
                             }
-
+                            
                             self.updateState(state: .STATE_VISUALIZING)
                             
                             self.rtabmap!.postExportation(visualize: true)
-
+                            
                             self.setGLCamera(type: 2)
-
+                            
                             if self.openedDatabasePath == nil
                             {
                                 self.save();
@@ -1437,7 +1457,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
             self.progressView = nil
             self.rtabmap!.cancelProcessing()
         }))
-
+        
         let previousState = mState
         
         updateState(state: .STATE_PROCESSING)
@@ -1502,10 +1522,10 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
             // if you want to filter the directory contents you can do like this:
             
             let data = fileURLs.map { url in
-                        (url, (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate ?? Date.distantPast)
-                    }
-                    .sorted(by: { $0.1 > $1.1 }) // sort descending modification dates
-                    .map { $0.0 } // extract file names
+                (url, (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate ?? Date.distantPast)
+            }
+                .sorted(by: { $0.1 > $1.1 }) // sort descending modification dates
+                .map { $0.0 } // extract file names
             databases = data.filter{ $0.pathExtension == "db" && $0.lastPathComponent != RTABMAP_TMP_DB && $0.lastPathComponent != RTABMAP_RECOVERY_DB }
             
         } catch {
@@ -1558,23 +1578,23 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
                 }
             }
         }
-
+        
         //Step : 3
         alert.addTextField { (textField) in
             var components = fileURL.lastPathComponent.components(separatedBy: ".")
             if components.count > 1 { // If there is a file extension
-              components.removeLast()
+                components.removeLast()
                 textField.text = components.joined(separator: ".")
             } else {
                 textField.text = fileURL.lastPathComponent
             }
         }
-
+        
         //Step : 4
         alert.addAction(rename)
         //Cancel action
         alert.addAction(UIAlertAction(title: "Cancel", style: .default) { (alertAction) in })
-
+        
         self.present(alert, animated: true) {
             alert.textFields?.first?.selectAll(nil)
         }
@@ -1610,7 +1630,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
                 }
             }
         }
-
+        
         //Step : 3
         alert.addTextField { (textField) in
             if self.openedDatabasePath != nil && !self.openedDatabasePath!.path.isEmpty
@@ -1627,17 +1647,17 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
                 textField.text = Date().getFormattedDate(format: "yyMMdd-HHmmss")
             }
         }
-
+        
         //Step : 4
         alert.addAction(save)
         //Cancel action
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { (alertAction) in })
-
+        
         self.present(alert, animated: true) {
             alert.textFields?.first?.selectAll(nil)
         }
     }
-
+    
     func writeExportedFiles(fileName: String)
     {
         let alertView = UIAlertController(title: "Exporting", message: "Please wait while zipping data to \(fileName+".zip")...", preferredStyle: .alert)
@@ -1648,7 +1668,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         }))
         
         let previousState = mState;
-
+        
         updateState(state: .STATE_PROCESSING);
         
         present(alertView, animated: true, completion: {
@@ -1661,7 +1681,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
             alertView.view.addSubview(self.progressView!)
             
             let exportDir = self.getTmpDirectory().appendingPathComponent(self.RTABMAP_EXPORT_DIR)
-           
+            
             do {
                 try FileManager.default.removeItem(at: exportDir)
             }
@@ -1693,7 +1713,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
                                 success = true
                             }
                             catch {
-                              print("Something went wrong while zipping")
+                                print("Something went wrong while zipping")
                             }
                         }
                     } catch {
@@ -1717,7 +1737,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
                     alertShare.addAction(alertActionYes)
                     let alertActionNo = UIAlertAction(title: "No", style: .cancel) {
                         (UIAlertAction) -> Void in
-                       
+                        
                     }
                     alertShare.addAction(alertActionNo)
                     
@@ -1741,23 +1761,23 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         }
         
         let alertController = UIAlertController(title: "Library", message: nil, preferredStyle: .alert)
-//        let customView = VerticalScrollerView()
-//        customView.dataSource = self
-//        customView.delegate = self
-//        customView.reload()
-//        alertController.view.addSubview(customView)
-//        customView.translatesAutoresizingMaskIntoConstraints = false
-//        customView.topAnchor.constraint(equalTo: alertController.view.topAnchor, constant: 60).isActive = true
-//        customView.rightAnchor.constraint(equalTo: alertController.view.rightAnchor, constant: -10).isActive = true
-//        customView.leftAnchor.constraint(equalTo: alertController.view.leftAnchor, constant: 10).isActive = true
-//        customView.bottomAnchor.constraint(equalTo: alertController.view.bottomAnchor, constant: -45).isActive = true
-//        
+        //        let customView = VerticalScrollerView()
+        //        customView.dataSource = self
+        //        customView.delegate = self
+        //        customView.reload()
+        //        alertController.view.addSubview(customView)
+        //        customView.translatesAutoresizingMaskIntoConstraints = false
+        //        customView.topAnchor.constraint(equalTo: alertController.view.topAnchor, constant: 60).isActive = true
+        //        customView.rightAnchor.constraint(equalTo: alertController.view.rightAnchor, constant: -10).isActive = true
+        //        customView.leftAnchor.constraint(equalTo: alertController.view.leftAnchor, constant: 10).isActive = true
+        //        customView.bottomAnchor.constraint(equalTo: alertController.view.bottomAnchor, constant: -45).isActive = true
+        //
         alertController.view.translatesAutoresizingMaskIntoConstraints = false
         alertController.view.heightAnchor.constraint(equalToConstant: 600).isActive = true
         alertController.view.widthAnchor.constraint(equalToConstant: 400).isActive = true
-//
-//        customView.backgroundColor = .darkGray
-
+        //
+        //        customView.backgroundColor = .darkGray
+        
         let selectAction = UIAlertAction(title: "Select", style: .default) { (action) in
             self.openDatabase(fileUrl: self.databases[self.currentDatabaseIndex])
         }
@@ -1840,25 +1860,25 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         rtabmap!.setBackgroundColor(gray: bgColor);
         
         DispatchQueue.main.async {
-              self.statusLabel.textColor = bgColor>=0.6 ? UIColor(white: 0.0, alpha: 1) : UIColor(white: 1.0, alpha: 1)
+            self.statusLabel.textColor = bgColor>=0.6 ? UIColor(white: 0.0, alpha: 1) : UIColor(white: 1.0, alpha: 1)
         }
         
         rtabmap!.setClusterRatio(value: defaults.float(forKey: "NoiseFilteringRatio"));
         rtabmap!.setMaxGainRadius(value: defaults.float(forKey: "ColorCorrectionRadius"));
         rtabmap!.setRenderingTextureDecimation(value: defaults.integer(forKey: "TextureResolution"));
         
-//        if(locationManager != nil && !defaults.bool(forKey: "SaveGPS"))
-//        {
-//            locationManager?.stopUpdatingLocation()
-//            locationManager = nil
-//            mLastKnownLocation = nil
-//        }
-//        else if(locationManager == nil && defaults.bool(forKey: "SaveGPS"))
-//        {
-//            locationManager = CLLocationManager()
-//            locationManager?.desiredAccuracy = kCLLocationAccuracyBestForNavigation
-//            locationManager?.delegate = self
-//        }
+        //        if(locationManager != nil && !defaults.bool(forKey: "SaveGPS"))
+        //        {
+        //            locationManager?.stopUpdatingLocation()
+        //            locationManager = nil
+        //            mLastKnownLocation = nil
+        //        }
+        //        else if(locationManager == nil && defaults.bool(forKey: "SaveGPS"))
+        //        {
+        //            locationManager = CLLocationManager()
+        //            locationManager?.desiredAccuracy = kCLLocationAccuracyBestForNavigation
+        //            locationManager?.delegate = self
+        //        }
     }
     
     // MARK: RTABMap protocols
@@ -1908,9 +1928,9 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
             }
             
             let usedMem = self.getMemoryUsage()
-                        self.statusLabel.text =
-                            "Status: " + (status == 1 && msg.isEmpty ? self.mState == State.STATE_CAMERA ? "Camera Preview" : "Idle" : msg) + "\n" +
-                            "Memory Usage: \(usedMem) MB"
+            self.statusLabel.text =
+            "Status: " + (status == 1 && msg.isEmpty ? self.mState == State.STATE_CAMERA ? "Camera Preview" : "Idle" : msg) + "\n" +
+            "Memory Usage: \(usedMem) MB"
         }
     }
     
@@ -1933,16 +1953,16 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
                 self.updateState(state: self.mState) // refesh menus and actions
             }
             
-                        self.statusLabel.text = ""
-                        if self.statusShown {
-                            self.statusLabel.text =
-                            self.statusLabel.text! +
-                            "Status: \(self.getStateString(state: self.mState))\n" +
-                            "Memory Usage : \(usedMem) MB"
-                        }
+            self.statusLabel.text = ""
+            if self.statusShown {
+                self.statusLabel.text =
+                self.statusLabel.text! +
+                "Status: \(self.getStateString(state: self.mState))\n" +
+                "Memory Usage : \(usedMem) MB"
+            }
             if self.debugShown {
-                                self.statusLabel.text =
-                                self.statusLabel.text! + "\n"
+                self.statusLabel.text =
+                self.statusLabel.text! + "\n"
                 var gpsString = "\n"
                 if(UserDefaults.standard.bool(forKey: "SaveGPS"))
                 {
@@ -1973,25 +1993,25 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
                     lightString = String("Light (lm): \(Int(self.mLastLightEstimate!))\n")
                 }
                 
-                                self.statusLabel.text =
-                                self.statusLabel.text! +
-                                gpsString + //gps
-                                lightString + //env sensors
+                self.statusLabel.text =
+                self.statusLabel.text! +
+                gpsString + //gps
+                lightString + //env sensors
                 //                "Time: \(formattedDate)\n" +
-                                "Nodes (WM): \(nodes) (\(nodesDrawn) shown)\n" +
-                                "Words: \(words)\n" +
-                                "Database (MB): \(databaseMemoryUsed)\n" +
-                                "Number of points: \(points)\n" +
-                                "Polygons: \(polygons)\n" +
-                                "Update time (ms): \(Int(updateTime)) / \(self.mTimeThr==0 ? "No Limit" : String(self.mTimeThr))\n" +
-                                "Features: \(featuresExtracted) / \(self.mMaxFeatures==0 ? "No Limit" : (self.mMaxFeatures == -1 ? "Disabled" : String(self.mMaxFeatures)))\n" +
-                                "Rehearsal (%): \(Int(rehearsalValue*100))\n" +
-                                "Loop closures: \(self.mTotalLoopClosures)\n" +
-                                "Inliers: \(inliers)\n" +
-                                "Hypothesis (%): \(Int(hypothesis*100)) / \(Int(self.mLoopThr*100)) (\(loopClosureId>0 ? loopClosureId : highestHypId))\n" +
-                                String(format: "FPS (rendering): %.1f Hz\n", fps) +
-                                String(format: "Travelled distance: %.2f m\n", distanceTravelled) +
-                                String(format: "Pose (x,y,z): %.2f %.2f %.2f", x, y, z)
+                "Nodes (WM): \(nodes) (\(nodesDrawn) shown)\n" +
+                "Words: \(words)\n" +
+                "Database (MB): \(databaseMemoryUsed)\n" +
+                "Number of points: \(points)\n" +
+                "Polygons: \(polygons)\n" +
+                "Update time (ms): \(Int(updateTime)) / \(self.mTimeThr==0 ? "No Limit" : String(self.mTimeThr))\n" +
+                "Features: \(featuresExtracted) / \(self.mMaxFeatures==0 ? "No Limit" : (self.mMaxFeatures == -1 ? "Disabled" : String(self.mMaxFeatures)))\n" +
+                "Rehearsal (%): \(Int(rehearsalValue*100))\n" +
+                "Loop closures: \(self.mTotalLoopClosures)\n" +
+                "Inliers: \(inliers)\n" +
+                "Hypothesis (%): \(Int(hypothesis*100)) / \(Int(self.mLoopThr*100)) (\(loopClosureId>0 ? loopClosureId : highestHypId))\n" +
+                String(format: "FPS (rendering): %.1f Hz\n", fps) +
+                String(format: "Travelled distance: %.2f m\n", distanceTravelled) +
+                String(format: "Pose (x,y,z): %.2f %.2f %.2f", x, y, z)
             }
             if(self.mState == .STATE_MAPPING || self.mState == .STATE_VISUALIZING_CAMERA)
             {

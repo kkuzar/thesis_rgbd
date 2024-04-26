@@ -1,0 +1,146 @@
+//
+//  ScanFileModel.swift
+//  RgbdSlam
+//
+//  Created by Kyzyrbek Kuzar on 25.4.2024.
+//
+
+import Foundation
+import UIKit
+import Combine
+import SwiftUI
+
+
+struct UIImageViewWrapper: UIViewRepresentable {
+    var uiImage: UIImage
+    var contentMode: UIView.ContentMode
+    
+    func makeUIView(context: Context) -> UIImageView {
+        let imageView = UIImageView(image: uiImage)
+        imageView.contentMode = contentMode
+        imageView.clipsToBounds = true
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }
+    
+    func updateUIView(_ uiView: UIImageView, context: Context) {
+        // Update the UIImageView if needed
+        uiView.image = uiImage
+        uiView.contentMode = contentMode
+    }
+}
+
+let RTABMAP_TMP_DB = "rtabmap.tmp.db"
+let RTABMAP_RECOVERY_DB = "rtabmap.tmp.recovery.db"
+let RTABMAP_EXPORT_DIR = "Export"
+
+class ScanLibarayObject {
+    var scanThumbnail: UIImage?
+    var scanName: String
+    var scanPath: URL
+    var scanSize: UInt64
+    var scanSizeString: String
+    var scanDate: Date?
+    var scanAttr: Any?
+    
+    
+    init(pathURL: URL) {
+        // super.init(frame: frame)
+        self.scanPath = pathURL
+        self.scanName = URL(fileURLWithPath: pathURL.path).lastPathComponent
+        self.scanSize = URL(fileURLWithPath: pathURL.path).fileSize
+        self.scanSizeString = URL(fileURLWithPath: pathURL.path).fileSizeString
+        self.scanDate = URL(fileURLWithPath: pathURL.path).creationDate
+        self.scanAttr = URL(fileURLWithPath: pathURL.path).attributes
+        
+        DispatchQueue.global(qos: .background).async {
+            let loadedImage = getPreviewImage(databasePath: self.scanPath.path)
+            DispatchQueue.main.async {
+                self.scanThumbnail = loadedImage
+            }
+        }
+    }
+    
+}
+
+
+class ChosenScan: ObservableObject {
+    @Published var filePath: String?
+    
+}
+
+class ScanFilesModel: ObservableObject {
+    @Published var scanFiles: [ScanLibarayObject] = []
+    @Published var fileURL: [URL]?
+    
+    init() {
+        // self.fileList = fetchDatabaseFiles()
+        let existScan: [URL] = getExistScan()
+        self.fileURL = existScan
+        initScanLibObj(scansUrl:existScan)
+    }
+    
+    deinit {
+        
+    }
+    
+    func getDocumentDirectory() -> URL {
+        return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+    }
+    
+    func initScanLibObj (scansUrl: [URL]) {
+        scansUrl.forEach{ fileUrl in
+            self.scanFiles.append(ScanLibarayObject(pathURL: fileUrl))
+        }
+    }
+    
+    func getExistScan() -> [URL] {
+        do {
+            let fileURLs = try FileManager.default.contentsOfDirectory(at: getDocumentDirectory(), includingPropertiesForKeys: nil)
+            // if you want to filter the directory contents you can do like this:
+            
+            let data = fileURLs.map { url in
+                (url, (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate ?? Date.distantPast)
+            }
+                .sorted(by: { $0.1 > $1.1 }) // sort descending modification dates
+                .map { $0.0 } // extract file names
+            return data.filter{ $0.pathExtension == "db" && $0.lastPathComponent != RTABMAP_TMP_DB && $0.lastPathComponent != RTABMAP_RECOVERY_DB }
+            
+        } catch {
+            print("Error while enumerating files : \(error.localizedDescription)")
+            return []
+        }
+    }
+    
+    func rename() {
+        
+    }
+    
+    func upload() {
+        
+    }
+    
+    func remove() {
+        
+    }
+    
+    //    func fetchDatabaseFiles() -> [String] {
+    //        let fileManager = FileManager.default
+    //        do {
+    //            // Get the URL for the documents directory
+    //            let documentsDirectory = try fileManager.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+    //
+    //            // List all files in the directory, this files contains filepath
+    //            let files = try fileManager.contentsOfDirectory(at: documentsDirectory, includingPropertiesForKeys: nil)
+    //
+    //            // Filter files to include only *.db files
+    //            let dbFiles = files.filter { $0.pathExtension == "db" }.map { $0.lastPathComponent }
+    //
+    //            return dbFiles
+    //        } catch {
+    //            print("Error fetching database files: \(error)")
+    //            return []
+    //        }
+    //    }
+}
+

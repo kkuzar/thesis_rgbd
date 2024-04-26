@@ -8,6 +8,7 @@
 import SwiftUI
 import Firebase
 
+
 class FirebaseManager: ObservableObject {
     @Published var isConnected: Bool = false
     
@@ -25,19 +26,47 @@ class FirebaseManager: ObservableObject {
 struct SettingsView: View {
     @ObservedObject var settingForm = UserSettingsModel.shared
     @StateObject private var firebaseManager = FirebaseManager()
+    @StateObject var authUser = AuthUser()
+    
+    @State private var isSignedOut = false
+    @State private var showingAlert = false
+    @State private var alertMessage = ""
     
     var body: some View {
         
         NavigationView {
             List {
-
+                
                 Section("Cloud status") {
                     if firebaseManager.isConnected {
-                        Text("Connected to Firebase ✅")
+                        Text("Connect to Cloud site success ✅")
                             .foregroundColor(.green)
                     } else {
-                        Text("Checking connection to Firebase...❌")
+                        Text("Checking connection to Cloud...❌")
                             .foregroundColor(.red)
+                    }
+                    
+                    if let user = authUser.user {
+                        Text("Hello, \(user.email ?? "User")")
+                            .foregroundStyle(.green)
+                        Button("Sign Out") {
+                            signOut { success, message in
+                                self.alertMessage = message
+                                self.showingAlert = true
+                                self.isSignedOut = success
+                            }
+                        }
+                        .alert(isPresented: $showingAlert) {
+                            Alert(title: Text("Sign Out"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+                        }
+                        .disabled(isSignedOut) // Disable button if signed out
+                    } else {
+                        Text("User not signed into cloud ⚠️")
+                            .foregroundColor(.yellow)
+                        
+                        NavigationLink (destination: SettingFirebaseSignInView()) {
+                            Text("Sign Into Cloud")
+                        }
                     }
                 }
                 
@@ -157,6 +186,15 @@ struct SettingsView: View {
                     Text(Image(systemName: "chevron.backward")) + Text(" Library")
                 }
             }
+        }
+    }
+    // function below
+    func signOut(completion: @escaping (Bool, String) -> Void) {
+        do {
+            try Auth.auth().signOut()
+            completion(true, "User signed out successfully.")
+        } catch let signOutError as NSError {
+            completion(false, "Error signing out: \(signOutError.localizedDescription)")
         }
     }
 }
