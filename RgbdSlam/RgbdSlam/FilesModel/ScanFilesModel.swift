@@ -145,24 +145,6 @@ class ScanFilesModel: ObservableObject {
             print("Error deleting file \(fileURL)")
         }
     }
-    
-    //    func fetchDatabaseFiles() -> [String] {
-    //        let fileManager = FileManager.default
-    //        do {
-    //            // Get the URL for the documents directory
-    //            let documentsDirectory = try fileManager.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
-    //
-    //            // List all files in the directory, this files contains filepath
-    //            let files = try fileManager.contentsOfDirectory(at: documentsDirectory, includingPropertiesForKeys: nil)
-    //
-    //            // Filter files to include only *.db files
-    //            let dbFiles = files.filter { $0.pathExtension == "db" }.map { $0.lastPathComponent }
-    //
-    //            return dbFiles
-    //        } catch {
-    //            print("Error fetching database files: \(error)")
-    //            return []
-    //        }
-    //    }
+
 }
 

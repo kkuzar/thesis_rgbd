@@ -49,7 +49,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
              STATE_VISUALIZING_WHILE_LOADING // Camera/Motion off - Loading data while showing optimized mesh
     }
     
-    private let arView = ARSCNView()
+    private var arView = ARSCNView()
     //    private let session = ARSession()
     private var locationManager: CLLocationManager?
     private var mLastKnownLocation: CLLocation?
@@ -767,10 +767,32 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     // MARK: Override UIkit life cycle hook
     
     deinit {
+        print("Deinit of RTABMAP called from here.")
         EAGLContext.setCurrent(context)
         rtabmap = nil
         context = nil
         EAGLContext.setCurrent(nil)
+    }
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        if let handle = handle {
+            Auth.auth().removeStateDidChangeListener(handle)
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.mState = State.STATE_WELCOME;
+            // self.updateState(state: self.mState)
+            self.isLoadFile = false
+            self.loadFileURL = nil
+           
+        }
+    }
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [self] in
+            self.rtabmap!.removeObserver(self)
+            print("I suppose to deinit rtabmap here")
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -795,14 +817,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        //        chosenScan?.$filePath
-        //            .sink(receiveValue: { [weak self] path in
-        //                self?.updateUI(path: path)
-        //            })
-        //            .store(in: &cancellables)
-        
-        
+
         self.toastLabel.isHidden = true
         depthSupported = ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth)
         
@@ -851,14 +866,23 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         exportScanBtn.tintColor = .white
         exportScanBtn.addTarget(self, action: #selector(exportScanAction), for: .touchUpInside)
         
-        statusLabel.textAlignment = .center
+        statusLabel.textAlignment = .left
         statusLabel.backgroundColor = .red
+        statusLabel.numberOfLines = 0 // show all the lines
+        statusLabel.font = UIFont.systemFont(ofSize: 12)
         statusLabel.translatesAutoresizingMaskIntoConstraints = false
-        
+        statusLabel.adjustsFontSizeToFitWidth = true
+        statusLabel.minimumScaleFactor = 0.5 // Adjust as necessary
+        statusLabel.lineBreakMode = .byWordWrapping
         
         toastLabel.backgroundColor = .green
-        toastLabel.textAlignment = .left
+        toastLabel.textAlignment = .center
+        toastLabel.numberOfLines = 0 // show all the lines
+        toastLabel.font = UIFont.systemFont(ofSize: 12)
         toastLabel.translatesAutoresizingMaskIntoConstraints = false
+        toastLabel.adjustsFontSizeToFitWidth = true
+        toastLabel.minimumScaleFactor = 0.5 // Adjust as necessary
+        toastLabel.lineBreakMode = .byWordWrapping
         
         // Add buttons to the view
         view.addSubview(newScanBtn)
@@ -911,6 +935,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
             self.updateState(state: self.mState)
         }
         
+        
     }
     
     // Auto-hide the home indicator to maximize immersion in AR experiences.
@@ -936,12 +961,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         view.bringSubviewToFront(exportScanBtn)
     }
     
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        if let handle = handle {
-            Auth.auth().removeStateDidChangeListener(handle)
-        }
-    }
+
     
     // MARK: Update Status and etc
     
@@ -1006,55 +1026,55 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         }
         
         mState = state;
-        
-        var actionNewScanEnabled: Bool
-        var actionSaveEnabled: Bool
-        var actionResumeEnabled: Bool
-        var actionExportEnabled: Bool
-        var actionOptimizeEnabled: Bool
-        var actionSettingsEnabled: Bool
+       
+//        var actionNewScanEnabled: Bool
+//        var actionSaveEnabled: Bool
+//        var actionResumeEnabled: Bool
+//        var actionExportEnabled: Bool
+//        var actionOptimizeEnabled: Bool
+//        var actionSettingsEnabled: Bool
         
         updateLayoutButtonLabel(state: mState)
         
-        switch mState {
-        case .STATE_CAMERA:
-            actionNewScanEnabled = true
-            actionSaveEnabled = false
-            actionResumeEnabled = false
-            actionExportEnabled = false
-            actionOptimizeEnabled = false
-            actionSettingsEnabled = false
-        case .STATE_MAPPING:
-            actionNewScanEnabled = true
-            actionSaveEnabled = false
-            actionResumeEnabled = false
-            actionExportEnabled = false
-            actionOptimizeEnabled = false
-            actionSettingsEnabled = false
-        case .STATE_PROCESSING,
-                .STATE_VISUALIZING_WHILE_LOADING,
-                .STATE_VISUALIZING_CAMERA:
-            actionNewScanEnabled = false
-            actionSaveEnabled = false
-            actionResumeEnabled = false
-            actionExportEnabled = false
-            actionOptimizeEnabled = false
-            actionSettingsEnabled = false
-        case .STATE_VISUALIZING:
-            actionNewScanEnabled = true
-            actionSaveEnabled = mMapNodes>0
-            actionResumeEnabled = mMapNodes>0
-            actionExportEnabled = mMapNodes>0
-            actionOptimizeEnabled = mMapNodes>0
-            actionSettingsEnabled = true
-        default: // IDLE // WELCOME
-            actionNewScanEnabled = true
-            actionSaveEnabled = mState != .STATE_WELCOME && mMapNodes>0
-            actionResumeEnabled = mState != .STATE_WELCOME && mMapNodes>0
-            actionExportEnabled = mState != .STATE_WELCOME && mMapNodes>0
-            actionOptimizeEnabled = mState != .STATE_WELCOME && mMapNodes>0
-            actionSettingsEnabled = true
-        }
+//        switch mState {
+//        case .STATE_CAMERA:
+//            actionNewScanEnabled = true
+//            actionSaveEnabled = false
+//            actionResumeEnabled = false
+//            actionExportEnabled = false
+//            actionOptimizeEnabled = false
+//            actionSettingsEnabled = false
+//        case .STATE_MAPPING:
+//            actionNewScanEnabled = true
+//            actionSaveEnabled = false
+//            actionResumeEnabled = false
+//            actionExportEnabled = false
+//            actionOptimizeEnabled = false
+//            actionSettingsEnabled = false
+//        case .STATE_PROCESSING,
+//                .STATE_VISUALIZING_WHILE_LOADING,
+//                .STATE_VISUALIZING_CAMERA:
+//            actionNewScanEnabled = false
+//            actionSaveEnabled = false
+//            actionResumeEnabled = false
+//            actionExportEnabled = false
+//            actionOptimizeEnabled = false
+//            actionSettingsEnabled = false
+//        case .STATE_VISUALIZING:
+//            actionNewScanEnabled = true
+//            actionSaveEnabled = mMapNodes>0
+//            actionResumeEnabled = mMapNodes>0
+//            actionExportEnabled = mMapNodes>0
+//            actionOptimizeEnabled = mMapNodes>0
+//            actionSettingsEnabled = true
+//        default: // IDLE // WELCOME
+//            actionNewScanEnabled = true
+//            actionSaveEnabled = mState != .STATE_WELCOME && mMapNodes>0
+//            actionResumeEnabled = mState != .STATE_WELCOME && mMapNodes>0
+//            actionExportEnabled = mState != .STATE_WELCOME && mMapNodes>0
+//            actionOptimizeEnabled = mState != .STATE_WELCOME && mMapNodes>0
+//            actionSettingsEnabled = true
+//        }
         
         let view = self.view as? GLKView
         if(mState != .STATE_MAPPING && mState != .STATE_CAMERA && mState != .STATE_VISUALIZING_CAMERA)
@@ -1074,11 +1094,6 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
         if !self.isPaused {
             self.view.setNeedsDisplay()
         }
-        
-        if !self.isPaused {
-            self.view.setNeedsDisplay()
-        }
-        
     }
     
     // MARK: Guestures
@@ -1270,6 +1285,25 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     
     // MARK: Export and DB
     
+//    func savePreviwAsPNG(filePath: String, fileName: String) {
+//        // Get the document directory URL
+//        let previewImg =  getPreviewImage(databasePath: filePath)
+//        if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+//            let fileURL = documentsDirectory.appendingPathComponent("\(fileName).png")
+//            
+//            // Convert the UIImage to PNG data
+//            if let data = previewImg!.pngData() {
+//                do {
+//                    // Write the data to the file
+//                    try data.write(to: fileURL, options: .atomic)
+//                    print("Saved image to: \(fileURL)")
+//                } catch {
+//                    print("Error saving image: \(error)")
+//                }
+//            }
+//        }
+//    }
+    
     func exportMesh(isOBJ: Bool)
     {
         let ac = UIAlertController(title: "Maximum Polygons", message: "\n\n\n\n\n\n\n\n\n\n", preferredStyle: .alert)
@@ -1306,6 +1340,9 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
     }
     
     func openDatabase(fileUrl: URL) {
+        
+        self.isLoadFile = false
+        self.loadFileURL = nil
         
         if(mState == .STATE_CAMERA) {
             stopMapping(ignoreSaving: true)
@@ -1816,7 +1853,7 @@ class RGBDCaptureViewController: GLKViewController, ARSessionDelegate, RTABMapOb
                             (UIAlertAction) -> Void in
                             NSLog("upload to cloud")
                             
-                            self.uploadToFirebase(fileURL: zipFileUrl, fileName: "\(fileName).zip")
+                            self.uploadToFirebase(fileURL: zipFileUrl, fileName: "\(fileName)")
                         }
                         alertShare.addAction(alertActionUpload)
                     }
